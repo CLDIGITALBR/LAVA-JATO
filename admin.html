@@ -9,37 +9,53 @@
       --navy:#0D2B52; --blue:#1976D2; --blue-hover:#1565C0; --aqua:#29B6C5;
       --gold:#E8A020; --bg:#F0F8FF; --white:#fff; --border:#D6E8F8;
       --text-dark:#0D2B52; --text-mid:#4A6380; --text-light:#8AAAC8;
-      --radius:12px; --shadow:0 2px 16px rgba(13,43,82,.08);
+      --radius:12px; --shadow:0 2px 16px rgba(13,43,82,.08); --red:#c0392b;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text-dark);min-height:100vh;padding:28px 16px;}
-    .wrap{max-width:640px;margin:0 auto;}
+    .wrap{max-width:680px;margin:0 auto;}
     .top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
     .top h1{font-size:22px;}
     .top .tag{background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.5px;}
     .sub{font-size:13px;color:var(--text-mid);margin-bottom:24px;}
-    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px;margin-bottom:20px;}
-    .card h2{font-size:15px;margin-bottom:18px;color:var(--navy);}
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px;}
+    .card h2{font-size:15px;margin-bottom:16px;color:var(--navy);}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
     .full{grid-column:1/-1;}
     label{display:block;font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
-    input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text-dark);outline:none;}
-    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(25,118,210,.12);}
-    .btn{width:100%;padding:13px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;background:var(--blue);color:#fff;transition:background .18s;}
+    input,select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text-dark);outline:none;background:#fff;}
+    input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(25,118,210,.12);}
+    .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;background:var(--blue);color:#fff;transition:background .18s;}
     .btn:hover{background:var(--blue-hover);}
     .btn:disabled{opacity:.6;cursor:wait;}
+    .btn.navy{background:var(--navy);}
     .msg{margin-top:14px;font-size:14px;padding:12px 14px;border-radius:8px;display:none;}
     .msg.ok{display:block;background:#e6f7ee;color:#137a45;border:1px solid #b6e6cd;}
-    .msg.err{display:block;background:#fdeaea;color:#c0392b;border:1px solid #f3c2c2;}
+    .msg.err{display:block;background:#fdeaea;color:var(--red);border:1px solid #f3c2c2;}
     .token-row{display:flex;gap:10px;align-items:flex-end;}
     .token-row .grow{flex:1;}
-    .lista-item{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px;}
-    .lista-item:last-child{border-bottom:none;}
-    .lista-item .nome{font-weight:600;color:var(--navy);}
-    .lista-item .tel{color:var(--text-mid);font-size:12.5px;}
-    .empty{color:var(--text-light);font-size:13px;text-align:center;padding:16px;}
-    .cor-input{height:42px;padding:4px;}
     .hint{font-size:12px;color:var(--text-light);margin-top:8px;}
+    .cor-input{height:42px;padding:4px;}
+    /* Lava-jato card */
+    .lj{border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;}
+    .lj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;}
+    .lj-nome{font-weight:700;color:var(--navy);font-size:15px;}
+    .lj-tel{font-size:12.5px;color:var(--text-mid);}
+    .logins{list-style:none;margin:0 0 12px;}
+    .login-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;}
+    .login-item:last-child{border-bottom:none;}
+    .login-mail{color:var(--text-dark);word-break:break-all;}
+    .papel{font-size:10.5px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--bg);color:var(--blue);border:1px solid var(--border);margin-left:6px;}
+    .papel.dono{background:#fff6e6;color:var(--gold);border-color:#f0dcae;}
+    .btn-x{background:none;border:1px solid var(--border);color:var(--text-light);border-radius:6px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+    .btn-x:hover{color:var(--red);border-color:#f0c2c2;}
+    .btn-del-lj{background:none;border:1px solid #f0c2c2;color:var(--red);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+    .btn-del-lj:hover{background:#fdeaea;}
+    .add-login{display:grid;grid-template-columns:1.4fr 1fr .9fr auto;gap:8px;align-items:end;background:var(--bg);padding:12px;border-radius:8px;}
+    .add-login label{font-size:10px;margin-bottom:4px;}
+    .add-login .btn{width:auto;padding:9px 14px;font-size:13px;}
+    .empty{color:var(--text-light);font-size:13px;text-align:center;padding:16px;}
+    @media(max-width:600px){.grid{grid-template-columns:1fr;}.add-login{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
@@ -49,9 +65,9 @@
     <h1>Painel LavaSync</h1>
     <span class="tag">CL DIGITAL</span>
   </div>
-  <p class="sub">Cadastro de novos lava-jatos — só para uso interno.</p>
+  <p class="sub">Gestão de lava-jatos e logins — uso interno.</p>
 
-  <!-- Token de admin -->
+  <!-- Token -->
   <div class="card">
     <h2>🔑 Acesso</h2>
     <div class="token-row">
@@ -64,7 +80,7 @@
     <p class="hint">Fica guardado só neste navegador (sessão). É o valor de <b>ADMIN_TOKEN</b> do Netlify.</p>
   </div>
 
-  <!-- Formulário de cadastro -->
+  <!-- Novo lava-jato -->
   <div class="card">
     <h2>➕ Novo lava-jato</h2>
     <div class="grid">
@@ -72,38 +88,21 @@
         <label for="nome">Nome do lava-jato</label>
         <input type="text" id="nome" placeholder="Ex: Lava-Jato do Zé">
       </div>
-      <div>
-        <label for="telefone">Telefone</label>
-        <input type="tel" id="telefone" placeholder="(11) 99999-9999">
-      </div>
-      <div>
-        <label for="cor">Cor principal</label>
-        <input type="color" id="cor" class="cor-input" value="#1976D2">
-      </div>
-      <div class="full">
-        <label for="nome_dono">Nome do dono (responsável)</label>
-        <input type="text" id="nome_dono" placeholder="Ex: José">
-      </div>
-      <div>
-        <label for="email">E-mail de login</label>
-        <input type="email" id="email" placeholder="dono@lavajato.com">
-      </div>
-      <div>
-        <label for="senha">Senha inicial</label>
-        <input type="text" id="senha" placeholder="mín. 6 caracteres">
-      </div>
-      <div class="full">
-        <button class="btn" id="btn-criar">Cadastrar lava-jato</button>
-      </div>
+      <div><label for="telefone">Telefone</label><input type="tel" id="telefone" placeholder="(11) 99999-9999"></div>
+      <div><label for="cor">Cor principal</label><input type="color" id="cor" class="cor-input" value="#1976D2"></div>
+      <div class="full"><label for="nome_dono">Nome do dono</label><input type="text" id="nome_dono" placeholder="Ex: José"></div>
+      <div><label for="email">E-mail de login</label><input type="email" id="email" placeholder="dono@lavajato.com"></div>
+      <div><label for="senha">Senha inicial</label><input type="text" id="senha" placeholder="mín. 6 caracteres"></div>
+      <div class="full"><button class="btn" id="btn-criar">Cadastrar lava-jato</button></div>
     </div>
     <div class="msg" id="msg"></div>
   </div>
 
-  <!-- Lista de clientes -->
+  <!-- Lista -->
   <div class="card">
     <h2>🏢 Lava-jatos cadastrados</h2>
     <div id="lista"><p class="empty">Informe o token e clique em "Atualizar".</p></div>
-    <button class="btn" style="margin-top:16px;background:var(--navy);" id="btn-listar">Atualizar lista</button>
+    <button class="btn navy" style="margin-top:14px;" id="btn-listar">Atualizar lista</button>
   </div>
 
 </div>
@@ -111,56 +110,44 @@
 <script>
   const API = "/.netlify/functions/criar-lavajato";
   const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
-  // Lembra o token na sessão
   $("admin-token").value = sessionStorage.getItem("lavasync_admin_token") || "";
   $("btn-lembrar").addEventListener("click", () => {
     sessionStorage.setItem("lavasync_admin_token", $("admin-token").value);
     mostrar("ok", "Token salvo nesta sessão.");
   });
+  const token = () => $("admin-token").value.trim();
+  function mostrar(tipo, texto){ const m=$("msg"); m.className="msg "+(tipo==="ok"?"ok":"err"); m.textContent=texto; }
 
-  function token() { return $("admin-token").value.trim(); }
-
-  function mostrar(tipo, texto) {
-    const m = $("msg");
-    m.className = "msg " + (tipo === "ok" ? "ok" : "err");
-    m.textContent = texto;
+  async function api(method, body) {
+    const opts = { method, headers: { "x-admin-token": token() } };
+    if (body) { opts.headers["Content-Type"]="application/json"; opts.body=JSON.stringify(body); }
+    const r = await fetch(API, opts);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.erro || "Falha na operação.");
+    return data;
   }
 
-  // Cadastrar
+  // Criar lava-jato
   $("btn-criar").addEventListener("click", async () => {
     if (!token()) return mostrar("err", "Informe o token de admin primeiro.");
-    const payload = {
-      nome:      $("nome").value.trim(),
-      telefone:  $("telefone").value.trim(),
-      cor:       $("cor").value,
-      nome_dono: $("nome_dono").value.trim(),
-      email:     $("email").value.trim(),
-      senha:     $("senha").value,
+    const p = {
+      acao:"criar_lavajato",
+      nome:$("nome").value.trim(), telefone:$("telefone").value.trim(),
+      cor:$("cor").value, nome_dono:$("nome_dono").value.trim(),
+      email:$("email").value.trim(), senha:$("senha").value,
     };
-    if (!payload.nome || !payload.email || !payload.senha) {
-      return mostrar("err", "Preencha nome do lava-jato, e-mail e senha.");
-    }
-
-    $("btn-criar").disabled = true;
-    $("btn-criar").textContent = "Cadastrando...";
+    if (!p.nome || !p.email || !p.senha) return mostrar("err", "Preencha nome, e-mail e senha.");
+    $("btn-criar").disabled=true; $("btn-criar").textContent="Cadastrando...";
     try {
-      const r = await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-token": token() },
-        body: JSON.stringify(payload),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.erro || "Falha ao cadastrar.");
-      mostrar("ok", `✔ "${payload.nome}" cadastrado! Login: ${payload.email} / senha: ${payload.senha}`);
-      ["nome","telefone","nome_dono","email","senha"].forEach((id) => ($(id).value = ""));
+      await api("POST", p);
+      mostrar("ok", `✔ "${p.nome}" cadastrado! Login: ${p.email} / senha: ${p.senha}`);
+      ["nome","telefone","nome_dono","email","senha"].forEach((id)=>($(id).value=""));
       listar();
-    } catch (e) {
-      mostrar("err", e.message);
-    } finally {
-      $("btn-criar").disabled = false;
-      $("btn-criar").textContent = "Cadastrar lava-jato";
-    }
+    } catch(e){ mostrar("err", e.message); }
+    finally { $("btn-criar").disabled=false; $("btn-criar").textContent="Cadastrar lava-jato"; }
   });
 
   // Listar
@@ -169,21 +156,64 @@
     const box = $("lista");
     box.innerHTML = '<p class="empty">Carregando...</p>';
     try {
-      const r = await fetch(API, { headers: { "x-admin-token": token() } });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.erro || "Falha ao listar.");
+      const data = await api("GET");
       const arr = data.lava_jatos || [];
-      if (arr.length === 0) { box.innerHTML = '<p class="empty">Nenhum lava-jato cadastrado ainda.</p>'; return; }
+      if (arr.length === 0) { box.innerHTML='<p class="empty">Nenhum lava-jato cadastrado ainda.</p>'; return; }
       box.innerHTML = arr.map((lj) => `
-        <div class="lista-item">
-          <span class="nome">${lj.nome}</span>
-          <span class="tel">${lj.telefone || "—"}</span>
+        <div class="lj">
+          <div class="lj-head">
+            <div>
+              <div class="lj-nome">${esc(lj.nome)}</div>
+              <div class="lj-tel">${esc(lj.telefone) || "—"}</div>
+            </div>
+            <button class="btn-del-lj" onclick="removerLavajato('${lj.id}','${esc(lj.nome)}')">🗑 Apagar lava-jato</button>
+          </div>
+          <ul class="logins">
+            ${(lj.usuarios||[]).map((u)=>`
+              <li class="login-item">
+                <span class="login-mail">${esc(u.email)}<span class="papel ${u.papel==='dono'?'dono':''}">${esc(u.papel)}</span></span>
+                <button class="btn-x" onclick="removerLogin('${u.uid}','${esc(u.email)}')">remover</button>
+              </li>`).join("") || '<li class="empty">Sem logins.</li>'}
+          </ul>
+          <div class="add-login">
+            <div><label>Novo e-mail</label><input type="email" id="add-email-${lj.id}" placeholder="atendente@..."></div>
+            <div><label>Senha</label><input type="text" id="add-senha-${lj.id}" placeholder="mín. 6"></div>
+            <div><label>Papel</label>
+              <select id="add-papel-${lj.id}"><option value="atendente">Atendente</option><option value="dono">Dono</option></select>
+            </div>
+            <button class="btn" onclick="adicionarLogin('${lj.id}')">+ Login</button>
+          </div>
         </div>`).join("");
-    } catch (e) {
-      box.innerHTML = `<p class="empty" style="color:#c0392b;">${e.message}</p>`;
-    }
+    } catch(e){ box.innerHTML = `<p class="empty" style="color:var(--red);">${esc(e.message)}</p>`; }
   }
   $("btn-listar").addEventListener("click", listar);
+
+  // Adicionar login
+  async function adicionarLogin(ljId) {
+    const email = $("add-email-"+ljId).value.trim();
+    const senha = $("add-senha-"+ljId).value;
+    const papel = $("add-papel-"+ljId).value;
+    if (!email || !senha) return mostrar("err","Preencha e-mail e senha do novo login.");
+    try {
+      await api("POST", { acao:"adicionar_login", lava_jato_id:ljId, email, senha, papel });
+      mostrar("ok", `✔ Login ${email} adicionado.`);
+      listar();
+    } catch(e){ mostrar("err", e.message); }
+  }
+
+  // Remover login
+  async function removerLogin(uid, email) {
+    if (!confirm(`Remover o login ${email}? Essa pessoa perde o acesso.`)) return;
+    try { await api("POST", { acao:"remover_login", uid }); mostrar("ok","Login removido."); listar(); }
+    catch(e){ mostrar("err", e.message); }
+  }
+
+  // Remover lava-jato inteiro
+  async function removerLavajato(id, nome) {
+    if (!confirm(`APAGAR o lava-jato "${nome}"?\n\nIsso remove TODOS os logins e TODAS as lavagens dele. Não dá pra desfazer.`)) return;
+    try { await api("POST", { acao:"remover_lavajato", lava_jato_id:id }); mostrar("ok",`Lava-jato "${nome}" apagado.`); listar(); }
+    catch(e){ mostrar("err", e.message); }
+  }
 </script>
 </body>
 </html>
