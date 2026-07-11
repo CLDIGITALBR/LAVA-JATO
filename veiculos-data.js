@@ -1,2399 +1,595 @@
-// Lista de veiculos: tipo, marca e modelo
-// Cada objeto representa uma combinacao valida
-const veiculosData = [
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A1"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A5"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A7"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "A8"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "e-tron"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "e-tron GT"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "Q2"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "Q3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "Q5"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "Q7"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "Q8"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "R8"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "TT"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Audi",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "i4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "iX1"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "iX3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "M2"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "M3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "M4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Série 1"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Série 2"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Série 3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Série 4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Série 5"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Série 7"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "X1"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "X2"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "X3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "X4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "X5"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "X6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BMW",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Dolphin"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Dolphin Mini"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Han"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "King"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Seal"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Song Plus"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Tan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Yuan Plus"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "BYD",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Caoa Chery",
-    "modelo": "Arrizo 6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Caoa Chery",
-    "modelo": "Tiggo 2"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Caoa Chery",
-    "modelo": "Tiggo 5x"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Caoa Chery",
-    "modelo": "Tiggo 7"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Caoa Chery",
-    "modelo": "Tiggo 8"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Caoa Chery",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Agile"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Astra"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Blazer"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Camaro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Captiva"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Classic"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Cobalt"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Corsa"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Corvette"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Cruze"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Cruze Sport6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Equinox"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Meriva"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Montana"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Onix"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Onix Plus"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "S10"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Spin"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Tracker"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Tracker Premier"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Trailblazer"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Vectra"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Zafira"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Chevrolet",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "Basalt"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "Berlingo"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "C3"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "C3 Aircross"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "C4 Cactus"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "C4 Lounge"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "C5 Aircross"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "Jumper"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "Jumpy"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Citroën",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "500"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Argo"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Argo Trekking"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Bravo"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Cronos"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Doblo"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Fastback"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Fastback Abarth"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Fiorino"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Grand Siena"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Linea"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Palio"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Pulse"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Pulse Abarth"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Siena"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Strada"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Toro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Toro Ultra"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Uno"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Fiat",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Bronco"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "EcoSport"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Edge"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Fusion"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Ka"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Ka Sedan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Mustang"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Mustang Mach-E"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Ranger"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Ranger Raptor"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Territory"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Ford",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "GWM",
-    "modelo": "Haval H2"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "GWM",
-    "modelo": "Haval H6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "GWM",
-    "modelo": "Ora 03"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "GWM",
-    "modelo": "Tank 300"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "GWM",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "Accord"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "City"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "City Hatch"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "Civic"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "Civic Si"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "Civic Type R"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "CR-V"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "Fit"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "HR-V"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "WR-V"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Honda",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Azera"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Creta"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Creta Limited"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "HB20"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "HB20S"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "HB20X"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "i30"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "IONIQ 5"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "IONIQ 6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Santa Fe"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Tucson"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Veloster"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Hyundai",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Commander"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Commander Overland"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Compass"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Compass Limited"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Gladiator"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Grand Cherokee"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Renegade"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Renegade Sport"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Wrangler"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Jeep",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Carnival"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Cerato"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "EV6"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Niro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Picanto"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Seltos"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Sorento"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Sportage"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Stinger"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Telluride"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Kia",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Defender"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Discovery"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Discovery Sport"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Range Rover"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Range Rover Evoque"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Range Rover Sport"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Range Rover Velar"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Land Rover",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "ES"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "IS"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "LX"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "NX"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "RX"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "UX"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Lexus",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "AMG GT"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "Classe A"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "Classe B"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "Classe C"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "Classe E"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "Classe S"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "EQA"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "EQB"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "EQC"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "GLA"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "GLB"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "GLC"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "GLE"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "GLS"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mercedes-Benz",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "ASX"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Eclipse Cross"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "L200 Savana"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "L200 Triton"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Lancer"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Outlander"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Pajero"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Pajero Full"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Pajero Sport"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Mitsubishi",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Frontier"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Kicks"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Kicks Advance"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Leaf"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Livina"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "March"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Murano"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Sentra"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Versa"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Nissan",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "2008"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "208"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "3008"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "308"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "408"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "5008"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "Expert"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "Landtrek"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "Partner"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Peugeot",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Porsche",
-    "modelo": "718"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Porsche",
-    "modelo": "911"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Porsche",
-    "modelo": "Cayenne"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Porsche",
-    "modelo": "Macan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Porsche",
-    "modelo": "Taycan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Porsche",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Captur"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Duster"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Duster Oroch"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Fluence"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Kardian"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Kwid"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Kwid Outsider"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Logan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Megane"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Sandero"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Sandero Stepway"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Zoe"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Renault",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Subaru",
-    "modelo": "BRZ"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Subaru",
-    "modelo": "Forester"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Subaru",
-    "modelo": "Impreza"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Subaru",
-    "modelo": "Outback"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Subaru",
-    "modelo": "XV"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Subaru",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Camry"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Corolla"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Corolla Cross"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Etios"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "GR86"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Hilux"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Hilux SW4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Land Cruiser"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Prius"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "RAV4"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Supra"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Yaris"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Yaris Sedan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Toyota",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Amarok"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "CrossFox"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Fox"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Gol"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Gol Rallye"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Golf"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Golf GTI"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Jetta"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Passat"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Polo"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Polo Track"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Saveiro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "SpaceFox"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "T-Cross"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Taos"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Tiguan"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Touareg"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Virtus"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Voyage"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volkswagen",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volvo",
-    "modelo": "S60"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volvo",
-    "modelo": "V60"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volvo",
-    "modelo": "XC40"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volvo",
-    "modelo": "XC60"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volvo",
-    "modelo": "XC90"
-  },
-  {
-    "tipo": "Carro",
-    "marca": "Volvo",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CG 160 Fan"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CG 160 Titan"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CG 160 Start"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "Biz 125"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "Pop 110i"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 300"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 300F"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 500"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 500F"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 500X"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 600F Hornet"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 650R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 750 Hornet"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CB 1000R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CBR 500R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CBR 650R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "CBR 1000RR"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "XRE 190"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "XRE 300"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "NXR 160 Bros"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "NC 750X"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "Africa Twin"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "PCX 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "PCX 160"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "ADV 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "Goldwing"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Honda",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Factor 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Fazer 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Fazer 250"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "MT-03"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "MT-07"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "MT-09"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "MT-10"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Lander 250"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Ténéré 250"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Ténéré 700"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "XJ6"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "YZF-R3"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "YZF-R6"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "YZF-R1"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "NMAX 160"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "XMAX 250"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Neo 125"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Crosser 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Yamaha",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "GSX-S150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "GSX-S750"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "GSX-S1000"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "GSX-R600"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "GSX-R750"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "GSX-R1000"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "V-Strom 650"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "V-Strom 1050"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "Burgman 125"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "Burgman 400"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "Intruder 125"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "Hayabusa"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Suzuki",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Ninja 300"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Ninja 400"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Ninja 650"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Ninja ZX-6R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Ninja ZX-10R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Z400"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Z650"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Z900"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Versys 650"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Versys 1000"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "W800"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Vulcan"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kawasaki",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "G 310 R"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "G 310 GS"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "F 750 GS"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "F 850 GS"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "R 1250 GS"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "R 1250 RT"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "S 1000 RR"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "S 1000 XR"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "K 1600 GTL"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "BMW",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Sportster S"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Iron 883"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Street Bob"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Fat Boy"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Softail"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Road King"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Road Glide"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Street Glide"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Pan America"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Harley-Davidson",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Monster"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Panigale V2"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Panigale V4"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Streetfighter V4"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Multistrada"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Scrambler"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Diavel"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Ducati",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Shineray",
-    "modelo": "Phoenix 50"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Shineray",
-    "modelo": "Work 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Shineray",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Dafra",
-    "modelo": "Apache 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Dafra",
-    "modelo": "Speed 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Dafra",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kasinski",
-    "modelo": "Comet 150"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kasinski",
-    "modelo": "Comet 250"
-  },
-  {
-    "tipo": "Moto",
-    "marca": "Kasinski",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Sprinter 311"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Sprinter 313"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Sprinter 415"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Sprinter 515"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Vito"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Viano"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Mercedes-Benz",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Renault",
-    "modelo": "Master Furgão"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Renault",
-    "modelo": "Master Minibus"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Renault",
-    "modelo": "Trafic"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Renault",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Fiat",
-    "modelo": "Ducato Furgão"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Fiat",
-    "modelo": "Ducato Minibus"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Fiat",
-    "modelo": "Doblo Cargo"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Fiat",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Volkswagen",
-    "modelo": "Transporter"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Volkswagen",
-    "modelo": "Crafter"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Volkswagen",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Ford",
-    "modelo": "Transit"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Ford",
-    "modelo": "Transit Custom"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Ford",
-    "modelo": "Transit Minibus"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Ford",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Citroën",
-    "modelo": "Jumper"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Citroën",
-    "modelo": "Jumpy"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Citroën",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Peugeot",
-    "modelo": "Boxer"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Peugeot",
-    "modelo": "Expert"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Peugeot",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Hyundai",
-    "modelo": "H100"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Hyundai",
-    "modelo": "HR"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Hyundai",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Toyota",
-    "modelo": "Hiace"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Toyota",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Iveco",
-    "modelo": "Daily Furgão"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Iveco",
-    "modelo": "Daily Minibus"
-  },
-  {
-    "tipo": "Van",
-    "marca": "Iveco",
-    "modelo": "Outra"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Accelo 815"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Accelo 1016"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Atego 1319"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Atego 2426"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Axor 2544"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Actros 2646"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Mercedes-Benz",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volkswagen",
-    "modelo": "Delivery 9.170"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volkswagen",
-    "modelo": "Delivery 11.180"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volkswagen",
-    "modelo": "Constellation 17.280"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volkswagen",
-    "modelo": "Constellation 24.280"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volkswagen",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Ford",
-    "modelo": "Cargo 816"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Ford",
-    "modelo": "Cargo 1119"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Ford",
-    "modelo": "Cargo 1519"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Ford",
-    "modelo": "Cargo 2429"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Ford",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Iveco",
-    "modelo": "Daily 35S14"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Iveco",
-    "modelo": "Tector 170E28"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Iveco",
-    "modelo": "Stralis"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Iveco",
-    "modelo": "S-Way"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Iveco",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Scania",
-    "modelo": "P280"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Scania",
-    "modelo": "P360"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Scania",
-    "modelo": "R450"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Scania",
-    "modelo": "R500"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Scania",
-    "modelo": "S650"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Scania",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volvo",
-    "modelo": "FMX 370"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volvo",
-    "modelo": "FM 370"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volvo",
-    "modelo": "FH 460"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volvo",
-    "modelo": "FH 500"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Volvo",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "DAF",
-    "modelo": "XF 480"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "DAF",
-    "modelo": "XG 480"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "DAF",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "MAN",
-    "modelo": "TGX 28.440"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "MAN",
-    "modelo": "TGS 26.360"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "MAN",
-    "modelo": "Outro"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Agrale",
-    "modelo": "6000"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Agrale",
-    "modelo": "8500"
-  },
-  {
-    "tipo": "Caminhão",
-    "marca": "Agrale",
-    "modelo": "Outro"
+/* =============================================
+   LavaSync — Sistema de Gestão
+   Paleta: azul-oceano + aqua + branco + âmbar
+   ============================================= */
+
+:root {
+  --navy:        #0D2B52;
+  --blue:        #1976D2;
+  --blue-hover:  #1565C0;
+  --aqua:        #29B6C5;
+  --gold:        #E8A020;
+  --bg:          #F0F8FF;
+  --white:       #FFFFFF;
+  --border:      #D6E8F8;
+  --text-dark:   #0D2B52;
+  --text-mid:    #4A6380;
+  --text-light:  #8AAAC8;
+  --shadow:      0 2px 16px rgba(13, 43, 82, 0.08);
+  --radius:      12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-dark);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── LAYOUT DESKTOP ────────────────────────── */
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* ── SIDEBAR ───────────────────────────────── */
+
+.sidebar {
+  width: 240px;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: left 0.3s ease;
+}
+
+.sidebar-logo {
+  padding: 28px 24px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.logo-icon { font-size: 26px; line-height: 1; }
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.4px;
+}
+
+.logo-text span { color: var(--aqua); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.18s, color 0.18s;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-item.active { background: var(--blue); color: #fff; }
+
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 16px 24px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── MAIN CONTENT ──────────────────────────── */
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 36px;
+}
+
+/* ── PAGES ─────────────────────────────────── */
+
+.page { display: none; }
+.page.active { display: block; }
+
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-dark); }
+.page-header p { font-size: 14px; color: var(--text-mid); margin-top: 4px; }
+
+/* ── CARD ──────────────────────────────────── */
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+/* ── FORM ──────────────────────────────────── */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+
+label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+input, select {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  font-family: inherit;
+  width: 100%;
+}
+
+input:focus, select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+select:disabled {
+  background: var(--bg);
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+/* ── BOTÃO SUBMIT ──────────────────────────── */
+
+.btn-submit {
+  width: 100%;
+  padding: 13px 36px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s, transform 0.1s;
+}
+
+.btn-submit:hover { background: var(--blue-hover); }
+.btn-submit:active { transform: scale(0.98); }
+
+/* ── EMPTY STATE ───────────────────────────── */
+
+.empty-state { text-align: center; padding: 64px 32px; }
+
+.empty-state .empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--text-light); }
+
+/* ── MOBILE HEADER (oculto no desktop) ─────── * somente para fazer um teste/
+
+.mobile-header { display: none; }
+.overlay { display: none; }
+
+
+/* =============================================
+   MEDIA QUERY — CELULAR (telas < 768px)
+   Tudo aqui só vale no celular
+   ============================================= */
+
+@media (max-width: 768px) {
+
+  body { overflow: auto; height: auto; }
+
+  /* Barra superior do celular */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--navy);
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-];
+
+  .mobile-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .mobile-logo span { color: var(--aqua); }
+
+  /* Botão ☰ hambúrguer */
+  .hamburger {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+  }
+
+  /* Fundo escuro quando sidebar abre */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+
+  .overlay.open { display: block; }
+
+  /* Layout vira coluna no celular */
+  .layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Sidebar vira painel deslizante */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100vh;
+    width: 260px;
+    z-index: 200;
+    transition: left 0.28s ease;
+  }
+
+  .sidebar.open { left: 0; }
+
+  /* Conteúdo ocupa tela inteira */
+  .main-content {
+    padding: 20px 16px;
+    min-height: calc(100vh - 60px);
+  }
+
+  /* Formulário em coluna única */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-group.full { grid-column: 1; }
+
+  /* Card com menos padding */
+  .card { padding: 20px 16px; }
+
+  .page-header { margin-bottom: 20px; }
+  .page-header h1 { font-size: 20px; }
+}
+
+/* =============================================
+   COMPONENTES DINÂMICOS (fila, histórico, stats)
+   Adicionados na versão funcional (localStorage)
+   ============================================= */
+
+/* ── Badge de contagem na sidebar ─────────────── */
+.nav-badge {
+  margin-left: auto;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+/* ── Linha de estatísticas ────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.5px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ── Barra de busca ───────────────────────────── */
+.search-bar { margin-bottom: 20px; }
+.search-bar input {
+  max-width: 420px;
+  border-radius: 10px;
+}
+
+/* ── Card de lavagem (item da lista) ──────────── */
+.wash-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wash-card.done { border-left-color: var(--aqua); }
+
+.wash-info { flex: 1; min-width: 220px; }
+
+.wash-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.wash-cliente {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.wash-veiculo {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-bottom: 8px;
+}
+
+.wash-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12.5px;
+  color: var(--text-mid);
+}
+
+.wash-meta b { color: var(--text-dark); font-weight: 600; }
+
+.badge-placa {
+  background: var(--navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 9px;
+  border-radius: 6px;
+}
+
+.badge-servico {
+  background: var(--bg);
+  color: var(--blue);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.wash-valor {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+/* ── Ações do card ────────────────────────────── */
+.wash-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.btn-action {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: filter 0.15s, transform 0.1s;
+}
+.btn-action:active { transform: scale(0.97); }
+.btn-action:hover { filter: brightness(0.95); }
+
+.btn-concluir { background: var(--blue); color: #fff; }
+.btn-whats    { background: #25D366; color: #fff; }
+.btn-remover  { background: transparent; color: var(--text-light); border: 1px solid var(--border); }
+.btn-remover:hover { color: #d64545; border-color: #f0c2c2; filter: none; }
+
+/* ── Estado vazio (reaproveitado dinamicamente) ── */
+.empty-state { text-align: center; padding: 64px 32px; }
+.empty-state .empty-icon { font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.4; }
+.empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--text-light); }
+
+/* ── Toast ────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy);
+  color: #fff;
+  padding: 13px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 6px 24px rgba(13,43,82,0.25);
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Ajustes celular ──────────────────────────── */
+@media (max-width: 768px) {
+  .wash-card { flex-direction: column; }
+  .wash-actions { flex-direction: row; width: 100%; }
+  .wash-actions .btn-action { flex: 1; }
+  .stat-value { font-size: 20px; }
+}
+
+
+/* =============================================
+   TELA DE LOGIN + LOGOUT (versão Supabase)
+   ============================================= */
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: linear-gradient(135deg, var(--navy) 0%, #123f77 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-screen[hidden] { display: none; }
+
+.auth-box {
+  background: var(--white);
+  width: 100%;
+  max-width: 360px;
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+}
+
+.auth-logo {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+.auth-logo span { color: var(--aqua); }
+
+.auth-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-mid);
+  margin: 6px 0 24px;
+}
+
+.auth-field { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+
+.auth-box .btn-submit { margin-top: 8px; }
+
+.auth-erro {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #d64545;
+  font-weight: 500;
+}
+.auth-erro[hidden] { display: none; }
+
+/* Rodapé da sidebar com botão sair */
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sidebar-footer #nome-lavajato {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-logout {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background 0.18s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.16); }
