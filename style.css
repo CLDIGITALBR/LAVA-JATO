@@ -1,135 +1,595 @@
--- =====================================================================
---  LavaSync — Banco de dados (Supabase / PostgreSQL)
---  Arquitetura MULTI-TENANT: um banco atende vários lava-jatos.
---  Cada cliente só enxerga os próprios dados (Row Level Security).
---
---  COMO USAR:
---  1. Supabase → seu projeto → SQL Editor → New query
---  2. Cole TODO este arquivo e clique em "Run"
--- =====================================================================
+/* =============================================
+   LavaSync — Sistema de Gestão
+   Paleta: azul-oceano + aqua + branco + âmbar
+   ============================================= */
+
+:root {
+  --navy:        #0D2B52;
+  --blue:        #1976D2;
+  --blue-hover:  #1565C0;
+  --aqua:        #29B6C5;
+  --gold:        #E8A020;
+  --bg:          #F0F8FF;
+  --white:       #FFFFFF;
+  --border:      #D6E8F8;
+  --text-dark:   #0D2B52;
+  --text-mid:    #4A6380;
+  --text-light:  #8AAAC8;
+  --shadow:      0 2px 16px rgba(13, 43, 82, 0.08);
+  --radius:      12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-dark);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── LAYOUT DESKTOP ────────────────────────── */
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* ── SIDEBAR ───────────────────────────────── */
+
+.sidebar {
+  width: 240px;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: left 0.3s ease;
+}
+
+.sidebar-logo {
+  padding: 28px 24px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.logo-icon { font-size: 26px; line-height: 1; }
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.4px;
+}
+
+.logo-text span { color: var(--aqua); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.18s, color 0.18s;
+}
+
+.nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-item.active { background: var(--blue); color: #fff; }
+
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 16px 24px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── MAIN CONTENT ──────────────────────────── */
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 36px;
+}
+
+/* ── PAGES ─────────────────────────────────── */
+
+.page { display: none; }
+.page.active { display: block; }
+
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text-dark); }
+.page-header p { font-size: 14px; color: var(--text-mid); margin-top: 4px; }
+
+/* ── CARD ──────────────────────────────────── */
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+/* ── FORM ──────────────────────────────────── */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+
+label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+input, select {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  font-family: inherit;
+  width: 100%;
+}
+
+input:focus, select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+select:disabled {
+  background: var(--bg);
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+/* ── BOTÃO SUBMIT ──────────────────────────── */
+
+.btn-submit {
+  width: 100%;
+  padding: 13px 36px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s, transform 0.1s;
+}
+
+.btn-submit:hover { background: var(--blue-hover); }
+.btn-submit:active { transform: scale(0.98); }
+
+/* ── EMPTY STATE ───────────────────────────── */
+
+.empty-state { text-align: center; padding: 64px 32px; }
+
+.empty-state .empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--text-light); }
+
+/* ── MOBILE HEADER (oculto no desktop) ─────── * somente para fazer um teste/
+
+.mobile-header { display: none; }
+.overlay { display: none; }
 
 
--- =====================================================================
---  1. TABELAS
--- =====================================================================
+/* =============================================
+   MEDIA QUERY — CELULAR (telas < 768px)
+   Tudo aqui só vale no celular
+   ============================================= */
 
--- Cada lava-jato é um "tenant" (cliente da CL Digital)
-create table if not exists public.lava_jatos (
-  id             uuid primary key default gen_random_uuid(),
-  nome           text not null,
-  logo_url       text,
-  cor_primaria   text default '#1976D2',   -- personalização por cliente
-  telefone       text,
-  criado_em      timestamptz default now()
-);
+@media (max-width: 768px) {
 
--- Liga o usuário de login (auth.users do Supabase) ao seu lava-jato
-create table if not exists public.perfis (
-  id            uuid primary key references auth.users(id) on delete cascade,
-  lava_jato_id  uuid references public.lava_jatos(id) on delete cascade,
-  nome          text,
-  papel         text default 'atendente' check (papel in ('dono','atendente')),
-  criado_em     timestamptz default now()
-);
+  body { overflow: auto; height: auto; }
 
--- As lavagens (fila + histórico), sempre amarradas a um lava-jato
-create table if not exists public.lavagens (
-  id                uuid primary key default gen_random_uuid(),
-  lava_jato_id      uuid not null references public.lava_jatos(id) on delete cascade,
-  data_entrada      date,
-  nome_cliente      text not null,
-  telefone_cliente  text,
-  responsavel       text,
-  tipo_veiculo      text,
-  marca             text,
-  modelo            text,
-  placa             text,
-  servico           text,
-  valor_servico     numeric(10,2) default 0,
-  status            text default 'fila' check (status in ('fila','concluida')),
-  criado_em         timestamptz default now(),
-  concluido_em      timestamptz
-);
+  /* Barra superior do celular */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--navy);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
 
--- Índice pra consultas rápidas por lava-jato + status
-create index if not exists idx_lavagens_tenant_status
-  on public.lavagens (lava_jato_id, status);
+  .mobile-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .mobile-logo span { color: var(--aqua); }
+
+  /* Botão ☰ hambúrguer */
+  .hamburger {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+  }
+
+  /* Fundo escuro quando sidebar abre */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+  }
+
+  .overlay.open { display: block; }
+
+  /* Layout vira coluna no celular */
+  .layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Sidebar vira painel deslizante */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100vh;
+    width: 260px;
+    z-index: 200;
+    transition: left 0.28s ease;
+  }
+
+  .sidebar.open { left: 0; }
+
+  /* Conteúdo ocupa tela inteira */
+  .main-content {
+    padding: 20px 16px;
+    min-height: calc(100vh - 60px);
+  }
+
+  /* Formulário em coluna única */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-group.full { grid-column: 1; }
+
+  /* Card com menos padding */
+  .card { padding: 20px 16px; }
+
+  .page-header { margin-bottom: 20px; }
+  .page-header h1 { font-size: 20px; }
+}
+
+/* =============================================
+   COMPONENTES DINÂMICOS (fila, histórico, stats)
+   Adicionados na versão funcional (localStorage)
+   ============================================= */
+
+/* ── Badge de contagem na sidebar ─────────────── */
+.nav-badge {
+  margin-left: auto;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+/* ── Linha de estatísticas ────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.5px;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ── Barra de busca ───────────────────────────── */
+.search-bar { margin-bottom: 20px; }
+.search-bar input {
+  max-width: 420px;
+  border-radius: 10px;
+}
+
+/* ── Card de lavagem (item da lista) ──────────── */
+.wash-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wash-card.done { border-left-color: var(--aqua); }
+
+.wash-info { flex: 1; min-width: 220px; }
+
+.wash-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.wash-cliente {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.wash-veiculo {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-bottom: 8px;
+}
+
+.wash-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12.5px;
+  color: var(--text-mid);
+}
+
+.wash-meta b { color: var(--text-dark); font-weight: 600; }
+
+.badge-placa {
+  background: var(--navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 9px;
+  border-radius: 6px;
+}
+
+.badge-servico {
+  background: var(--bg);
+  color: var(--blue);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.wash-valor {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+/* ── Ações do card ────────────────────────────── */
+.wash-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.btn-action {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: filter 0.15s, transform 0.1s;
+}
+.btn-action:active { transform: scale(0.97); }
+.btn-action:hover { filter: brightness(0.95); }
+
+.btn-concluir { background: var(--blue); color: #fff; }
+.btn-whats    { background: #25D366; color: #fff; }
+.btn-remover  { background: transparent; color: var(--text-light); border: 1px solid var(--border); }
+.btn-remover:hover { color: #d64545; border-color: #f0c2c2; filter: none; }
+
+/* ── Estado vazio (reaproveitado dinamicamente) ── */
+.empty-state { text-align: center; padding: 64px 32px; }
+.empty-state .empty-icon { font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.4; }
+.empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--text-light); }
+
+/* ── Toast ────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy);
+  color: #fff;
+  padding: 13px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 6px 24px rgba(13,43,82,0.25);
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Ajustes celular ──────────────────────────── */
+@media (max-width: 768px) {
+  .wash-card { flex-direction: column; }
+  .wash-actions { flex-direction: row; width: 100%; }
+  .wash-actions .btn-action { flex: 1; }
+  .stat-value { font-size: 20px; }
+}
 
 
--- =====================================================================
---  2. FUNÇÃO AUXILIAR
---  Retorna o lava_jato_id do usuário logado.
---  SECURITY DEFINER evita recursão de RLS e deixa as policies limpas.
--- =====================================================================
+/* =============================================
+   TELA DE LOGIN + LOGOUT (versão Supabase)
+   ============================================= */
 
-create or replace function public.meu_lava_jato()
-returns uuid
-language sql
-security definer
-stable
-set search_path = public
-as $$
-  select lava_jato_id from public.perfis where id = auth.uid();
-$$;
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: linear-gradient(135deg, var(--navy) 0%, #123f77 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-screen[hidden] { display: none; }
 
+.auth-box {
+  background: var(--white);
+  width: 100%;
+  max-width: 360px;
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.3);
+}
 
--- =====================================================================
---  3. ROW LEVEL SECURITY (o coração da segurança multi-tenant)
---  Sem isso, a anon key exporia os dados de todos. COM isso,
---  cada usuário só acessa o próprio lava-jato.
--- =====================================================================
+.auth-logo {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+.auth-logo span { color: var(--aqua); }
 
-alter table public.lava_jatos enable row level security;
-alter table public.perfis     enable row level security;
-alter table public.lavagens   enable row level security;
+.auth-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-mid);
+  margin: 6px 0 24px;
+}
 
--- PERFIS: o usuário só vê o próprio perfil
-drop policy if exists perfil_proprio on public.perfis;
-create policy perfil_proprio on public.perfis
-  for select using (id = auth.uid());
+.auth-field { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
 
--- LAVA_JATOS: o usuário só vê o lava-jato ao qual pertence
-drop policy if exists lavajato_do_usuario on public.lava_jatos;
-create policy lavajato_do_usuario on public.lava_jatos
-  for select using (id = public.meu_lava_jato());
+.auth-box .btn-submit { margin-top: 8px; }
 
--- LAVAGENS: leitura, inserção, edição e remoção só do próprio lava-jato
-drop policy if exists lavagens_select on public.lavagens;
-create policy lavagens_select on public.lavagens
-  for select using (lava_jato_id = public.meu_lava_jato());
+.auth-erro {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #d64545;
+  font-weight: 500;
+}
+.auth-erro[hidden] { display: none; }
 
-drop policy if exists lavagens_insert on public.lavagens;
-create policy lavagens_insert on public.lavagens
-  for insert with check (lava_jato_id = public.meu_lava_jato());
-
-drop policy if exists lavagens_update on public.lavagens;
-create policy lavagens_update on public.lavagens
-  for update using (lava_jato_id = public.meu_lava_jato());
-
-drop policy if exists lavagens_delete on public.lavagens;
-create policy lavagens_delete on public.lavagens
-  for delete using (lava_jato_id = public.meu_lava_jato());
-
-
--- =====================================================================
---  4. COMO CADASTRAR UM NOVO LAVA-JATO (você, CL Digital, faz isso)
---  Enquanto são poucos clientes, o cadastro manual é o mais simples.
---
---  PASSO A: crie o usuário de login
---    Supabase → Authentication → Users → "Add user"
---    (defina email + senha e copie o UID gerado)
---
---  PASSO B: rode o bloco abaixo trocando os valores.
---    Ele cria o lava-jato e liga o usuário a ele.
--- =====================================================================
-
--- Exemplo (descomente e ajuste):
---
--- with novo as (
---   insert into public.lava_jatos (nome, telefone, cor_primaria)
---   values ('Lava-Jato do Zé', '11999998888', '#1976D2')
---   returning id
--- )
--- insert into public.perfis (id, lava_jato_id, nome, papel)
--- select 'COLE_O_UID_DO_USUARIO_AQUI'::uuid, novo.id, 'Zé', 'dono'
--- from novo;
+/* Rodapé da sidebar com botão sair */
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sidebar-footer #nome-lavajato {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-logout {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background 0.18s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.16); }
