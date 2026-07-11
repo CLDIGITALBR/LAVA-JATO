@@ -593,3 +593,93 @@ select:disabled {
   transition: background 0.18s;
 }
 .btn-logout:hover { background: rgba(255,255,255,0.16); }
+
+
+/* =============================================
+   EDITAR REGISTRO + HISTÓRICO POR PLACA
+   ============================================= */
+
+/* Placa clicável */
+.badge-placa { cursor: pointer; transition: filter .15s; }
+.badge-placa:hover { filter: brightness(1.25); text-decoration: underline; }
+
+/* Botão editar no card */
+.btn-editar { background: var(--aqua); color: #fff; }
+
+/* Dica de cliente recorrente no cadastro */
+.placa-hint {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--blue);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.placa-hint[hidden] { display: none; }
+
+/* Resumo da busca por placa */
+.resumo-placa {
+  background: #fff6e6;
+  border: 1px solid #f0dcae;
+  color: var(--text-dark);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+}
+.resumo-placa[hidden] { display: none; }
+.resumo-placa b { color: var(--navy); }
+
+/* Modal de edição */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(13,43,82,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay[hidden] { display: none; }
+
+.modal {
+  background: var(--white);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 14px;
+  padding: 26px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.28);
+}
+.modal h3 { font-size: 17px; color: var(--navy); margin-bottom: 18px; }
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+.modal-grid .fg { display: flex; flex-direction: column; gap: 6px; }
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+.btn-modal {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-modal.save { background: var(--blue); color: #fff; }
+.btn-modal.save:hover { background: var(--blue-hover); }
+.btn-modal.cancel { background: var(--bg); color: var(--text-mid); border: 1px solid var(--border); }
+
+@media (max-width: 600px) {
+  .modal-grid { grid-template-columns: 1fr; }
+}
