@@ -4,7 +4,10 @@
 // =============================================
 
 let LAVA_JATO_ID = null;
-let editandoId = null; // id da lavagem sendo editada
+let PAPEL = null;              // 'dono' | 'atendente'
+let SERVICOS = [];             // [{id, nome, preco, ...}]
+let editandoId = null;         // id da lavagem sendo editada
+let editandoServicoId = null;  // id do serviço sendo editado (tela Opções)
 
 // ── HELPERS ───────────────────────────────────
 
@@ -50,7 +53,7 @@ const authScreen = document.getElementById("auth-screen");
 function mostrarLogin() { authScreen.hidden = false; }
 
 async function entrarNoApp() {
-  const { data: perfil, error } = await sb.from("perfis").select("lava_jato_id, nome").maybeSingle();
+  const { data: perfil, error } = await sb.from("perfis").select("lava_jato_id, nome, papel").maybeSingle();
   if (error || !perfil || !perfil.lava_jato_id) {
     const erro = document.getElementById("auth-erro");
     erro.textContent = "Conta sem lava-jato vinculado. Fale com o suporte.";
@@ -59,10 +62,17 @@ async function entrarNoApp() {
     return;
   }
   LAVA_JATO_ID = perfil.lava_jato_id;
+  PAPEL = perfil.papel || "atendente";
   const { data: lj } = await sb.from("lava_jatos").select("nome").eq("id", LAVA_JATO_ID).maybeSingle();
   if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;
+
+  // Opções (gestão de serviços/preços) só aparece para o dono
+  document.getElementById("nav-opcoes").hidden = (PAPEL !== "dono");
+
   authScreen.hidden = true;
+  await carregarServicos();
   await atualizarBadge();
+  verificarOnboarding();
 }
 
 async function iniciarSessao() {
@@ -107,6 +117,7 @@ navItems.forEach((btn) => {
     document.getElementById("page-" + alvo).classList.add("active");
     if (alvo === "fila") await renderFila();
     if (alvo === "lavagens") await renderHistorico();
+    if (alvo === "opcoes") await carregarServicos();
     fecharSidebar();
   });
 });
@@ -152,18 +163,149 @@ marcaSelect.addEventListener("change", () => {
   preencherSelect(modeloSelect, modelos, "Selecione..."); modeloSelect.disabled = false;
 });
 
-// ── 4. SERVIÇOS ───────────────────────────────
+// ── 4. SERVIÇOS (cadastrados por cada lava-jato) ──
 
-const servicosData = [
-  "Lavagem simples","Lavagem completa","Lavagem a seco","Lavagem ecológica",
-  "Lavagem de motor","Lavagem de chassis","Higienização interna",
-  "Higienização de ar-condicionado","Polimento","Cristalização","Cera",
-  "Pretinho de pneu","Limpeza de estofados","Limpeza de tapetes",
-  "Lavagem de bancos de couro","Lavagem de teto","Descontaminação de pintura",
-  "Vitrificação de pintura","Lavagem de caminhonetes e utilitários","Lavagem de motos"
-];
-preencherSelect(servicoSelect, servicosData, "Selecione...");
-preencherSelect(document.getElementById("edit-servico"), servicosData, "Selecione...");
+// Preenche um <select> de serviços com os serviços do banco.
+// Guarda o preço em data-preco para o auto-preenchimento do valor.
+// valorSelecionado (nome) garante que um serviço antigo/removido ainda apareça.
+function popularSelectServicos(selectEl, valorSelecionado) {
+  if (!selectEl) return;
+  const ativos = SERVICOS.filter((s) => s.ativo !== false);
+  selectEl.innerHTML = ativos.length
+    ? '<option value="">Selecione...</option>'
+    : '<option value="">Nenhum serviço cadastrado</option>';
+  ativos.forEach((s) => {
+    const opt = document.createElement("option");
+    opt.value = s.nome;
+    opt.dataset.preco = s.preco;
+    opt.textContent = `${s.nome} — ${formatarBRL(s.preco)}`;
+    selectEl.appendChild(opt);
+  });
+  if (valorSelecionado && !ativos.some((s) => s.nome === valorSelecionado)) {
+    const opt = document.createElement("option");
+    opt.value = valorSelecionado;
+    opt.textContent = valorSelecionado + " (serviço antigo)";
+    selectEl.appendChild(opt);
+  }
+  if (valorSelecionado) selectEl.value = valorSelecionado;
+}
+
+// Auto-preenche o valor a partir do serviço escolhido
+servicoSelect.addEventListener("change", () => {
+  const opt = servicoSelect.selectedOptions[0];
+  if (opt && opt.dataset.preco !== undefined && opt.dataset.preco !== "") {
+    document.getElementById("valor_servico").value = opt.dataset.preco;
+  }
+});
+const editServicoSelect = document.getElementById("edit-servico");
+editServicoSelect.addEventListener("change", () => {
+  const opt = editServicoSelect.selectedOptions[0];
+  if (opt && opt.dataset.preco !== undefined && opt.dataset.preco !== "") {
+    document.getElementById("edit-valor").value = opt.dataset.preco;
+  }
+});
+
+// Busca os serviços do lava-jato e atualiza selects + tela Opções
+async function carregarServicos() {
+  const { data, error } = await sb.from("servicos").select("*").order("nome");
+  SERVICOS = error ? [] : (data || []);
+  popularSelectServicos(servicoSelect, servicoSelect.value);
+  popularSelectServicos(editServicoSelect, null);
+  renderServicos();
+}
+
+// Lista os serviços na tela Opções
+function renderServicos() {
+  const container = document.getElementById("servicos-lista");
+  if (!container) return;
+  if (SERVICOS.length === 0) {
+    container.innerHTML = `<div class="card"><div class="empty-state"><span class="empty-icon">🧼</span><h3>Nenhum serviço cadastrado</h3><p>Adicione acima os serviços que o seu lava-jato oferece e o preço de cada um</p></div></div>`;
+    return;
+  }
+  container.innerHTML = SERVICOS.map((s) => `
+    <div class="servico-row">
+      <div class="servico-info">
+        <span class="servico-nome">${s.nome}</span>
+        <span class="servico-preco">${formatarBRL(s.preco)}</span>
+      </div>
+      <div class="servico-acoes">
+        <button class="btn-action btn-editar" onclick="editarServico('${s.id}')">✏️ Editar</button>
+        <button class="btn-action btn-remover" onclick="removerServico('${s.id}')">Remover</button>
+      </div>
+    </div>`).join("");
+}
+
+// Adicionar OU salvar edição de serviço (só o dono)
+async function salvarServico() {
+  if (PAPEL !== "dono") { toast("Apenas o dono pode alterar os serviços."); return; }
+  const nome = document.getElementById("novo-servico-nome").value.trim();
+  const preco = Number(document.getElementById("novo-servico-preco").value) || 0;
+  if (!nome) { toast("Informe o nome do serviço."); return; }
+
+  const editando = !!editandoServicoId;
+  let error;
+  if (editando) {
+    ({ error } = await sb.from("servicos").update({ nome, preco }).eq("id", editandoServicoId));
+  } else {
+    ({ error } = await sb.from("servicos").insert({ lava_jato_id: LAVA_JATO_ID, nome, preco }));
+  }
+  if (error) { console.error(error); toast("❌ Erro ao salvar serviço."); return; }
+
+  cancelarEdicaoServico();
+  toast(editando ? "✔ Serviço atualizado." : "✔ Serviço adicionado.");
+  await carregarServicos();
+}
+
+function editarServico(id) {
+  if (PAPEL !== "dono") return;
+  const s = SERVICOS.find((x) => x.id === id);
+  if (!s) return;
+  editandoServicoId = id;
+  document.getElementById("novo-servico-nome").value = s.nome;
+  document.getElementById("novo-servico-preco").value = s.preco;
+  document.getElementById("btn-add-servico").textContent = "✔ Salvar alteração";
+  document.getElementById("btn-cancelar-servico").hidden = false;
+  document.getElementById("novo-servico-nome").focus();
+}
+
+function cancelarEdicaoServico() {
+  editandoServicoId = null;
+  document.getElementById("novo-servico-nome").value = "";
+  document.getElementById("novo-servico-preco").value = "";
+  document.getElementById("btn-add-servico").textContent = "➕ Adicionar";
+  document.getElementById("btn-cancelar-servico").hidden = true;
+}
+
+async function removerServico(id) {
+  if (PAPEL !== "dono") return;
+  if (!confirm("Remover este serviço da lista?")) return;
+  const { error } = await sb.from("servicos").delete().eq("id", id);
+  if (error) { console.error(error); toast("❌ Erro ao remover."); return; }
+  if (editandoServicoId === id) cancelarEdicaoServico();
+  toast("Serviço removido.");
+  await carregarServicos();
+}
+
+document.getElementById("btn-add-servico").addEventListener("click", salvarServico);
+document.getElementById("btn-cancelar-servico").addEventListener("click", cancelarEdicaoServico);
+
+// ── ONBOARDING (primeiro acesso do dono) ──────
+
+function verificarOnboarding() {
+  if (PAPEL !== "dono") return;                 // só o dono cadastra
+  if (SERVICOS.length > 0) return;              // já tem serviços → não precisa
+  if (localStorage.getItem("onboarding_pulado_" + LAVA_JATO_ID)) return; // já pulou
+  document.getElementById("onboarding-overlay").hidden = false;
+}
+
+document.getElementById("onb-adicionar").addEventListener("click", () => {
+  document.getElementById("onboarding-overlay").hidden = true;
+  irParaPagina("opcoes");
+});
+document.getElementById("onb-pular").addEventListener("click", () => {
+  localStorage.setItem("onboarding_pulado_" + LAVA_JATO_ID, "1");
+  document.getElementById("onboarding-overlay").hidden = true;
+});
 
 // ── HISTÓRICO POR PLACA: recorrência no cadastro ──
 
@@ -293,7 +435,7 @@ async function abrirEdicao(id) {
   document.getElementById("edit-telefone").value = r.telefone_cliente || "";
   document.getElementById("edit-responsavel").value = r.responsavel || "";
   document.getElementById("edit-placa").value = r.placa || "";
-  document.getElementById("edit-servico").value = r.servico || "";
+  popularSelectServicos(editServicoSelect, r.servico || "");
   document.getElementById("edit-valor").value = r.valor_servico || 0;
   editOverlay.hidden = false;
 }
