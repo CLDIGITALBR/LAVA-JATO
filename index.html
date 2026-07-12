@@ -24,7 +24,15 @@
     </div>
 
     <button class="btn-submit" id="btn-login">Entrar</button>
+    <button class="btn-link" id="btn-esqueci" type="button">Esqueci minha senha</button>
     <p class="auth-erro" id="auth-erro" hidden></p>
+
+    <div class="auth-aviso" id="auth-aviso" hidden>
+      <b>🔒 Esqueceu a senha?</b>
+      <p>Entre em contato com a <b>CL Digital</b>. Nós geramos uma senha provisória
+      e, ao entrar com ela, você cria uma nova senha só sua.</p>
+      <p class="auth-contato" id="auth-contato" hidden></p>
+    </div>
   </div>
 </div>
 
@@ -286,6 +294,30 @@
       <button class="btn-ghost" id="onb-pular">Pular por enquanto</button>
     </div>
     <p class="onb-rodape">Você pode fazer isso depois em <b>Opções</b>.</p>
+  </div>
+</div>
+
+<!-- ── MODAL OBRIGATÓRIO: criar senha própria ── -->
+<div class="modal-overlay" id="senha-overlay" hidden>
+  <div class="modal senha-modal">
+    <div class="onb-icon">🔒</div>
+    <h3>Crie a sua senha</h3>
+    <p class="onb-texto">
+      Por segurança, defina uma senha só sua para continuar.
+      Ela substitui a senha provisória.
+    </p>
+    <div class="senha-campos">
+      <div class="fg">
+        <label for="nova-senha">Nova senha</label>
+        <input type="password" id="nova-senha" placeholder="mín. 6 caracteres" autocomplete="new-password">
+      </div>
+      <div class="fg">
+        <label for="conf-senha">Confirmar senha</label>
+        <input type="password" id="conf-senha" placeholder="repita a senha" autocomplete="new-password">
+      </div>
+    </div>
+    <p class="auth-erro" id="senha-erro" hidden></p>
+    <button class="btn-submit" id="btn-salvar-senha">Salvar e entrar</button>
   </div>
 </div>
 
