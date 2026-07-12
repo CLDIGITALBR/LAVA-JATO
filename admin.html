@@ -172,7 +172,10 @@
             ${(lj.usuarios||[]).map((u)=>`
               <li class="login-item">
                 <span class="login-mail">${esc(u.email)}<span class="papel ${u.papel==='dono'?'dono':''}">${esc(u.papel)}</span></span>
-                <button class="btn-x" onclick="removerLogin('${u.uid}','${esc(u.email)}')">remover</button>
+                <span style="display:flex;gap:6px;">
+                  <button class="btn-x" onclick="resetarSenha('${u.uid}','${esc(u.email)}')">🔑 senha</button>
+                  <button class="btn-x" onclick="removerLogin('${u.uid}','${esc(u.email)}')">remover</button>
+                </span>
               </li>`).join("") || '<li class="empty">Sem logins.</li>'}
           </ul>
           <div class="add-login">
@@ -201,9 +204,19 @@
     } catch(e){ mostrar("err", e.message); }
   }
 
+  // Resetar senha (gera senha provisória; o dono troca ao entrar)
+  async function resetarSenha(uid, email) {
+    const nova = prompt(`Nova senha provisória para ${email} (mín. 6 caracteres).\n\nAo entrar, a pessoa vai precisar criar uma senha própria.`);
+    if (nova === null) return;               // cancelou
+    if (nova.trim().length < 6) return mostrar("err", "A senha precisa ter ao menos 6 caracteres.");
+    try {
+      await api("POST", { acao: "resetar_senha", uid, senha: nova.trim() });
+      mostrar("ok", `✔ Senha de ${email} redefinida. Senha provisória: ${nova.trim()} — repasse ao cliente. Ele criará a senha própria ao entrar.`);
+    } catch (e) { mostrar("err", e.message); }
+  }
+
   // Remover login
-  async function removerLogin(uid, email) {
-    if (!confirm(`Remover o login ${email}? Essa pessoa perde o acesso.`)) return;
+  async function removerLogin(uid, email) {    if (!confirm(`Remover o login ${email}? Essa pessoa perde o acesso.`)) return;
     try { await api("POST", { acao:"remover_login", uid }); mostrar("ok","Login removido."); listar(); }
     catch(e){ mostrar("err", e.message); }
   }
