@@ -60,6 +60,10 @@
         <span class="nav-icon">📋</span>
         Lavagens
       </button>
+      <button class="nav-item" data-page="opcoes" id="nav-opcoes" hidden>
+        <span class="nav-icon">⚙️</span>
+        Opções
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -209,6 +213,39 @@
       <div id="lavagens-lista"></div>
     </section>
 
+    <!-- TELA: Opções (só o dono) -->
+    <section class="page" id="page-opcoes">
+      <div class="page-header">
+        <h1>Opções</h1>
+        <p>Cadastre os serviços que o seu lava-jato oferece e o preço de cada um</p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-titulo">Tabela de serviços e preços</h3>
+        <p class="card-desc">
+          O preço cadastrado aqui preenche o valor automaticamente na hora
+          de registrar uma lavagem (ainda dá pra ajustar caso a caso).
+        </p>
+
+        <div class="servico-form">
+          <div class="form-group">
+            <label for="novo-servico-nome">Nome do serviço</label>
+            <input type="text" id="novo-servico-nome" placeholder="Ex: Lavagem completa">
+          </div>
+          <div class="form-group">
+            <label for="novo-servico-preco">Preço (R$)</label>
+            <input type="number" id="novo-servico-preco" step="0.01" min="0" placeholder="0,00">
+          </div>
+          <div class="servico-form-acoes">
+            <button class="btn-submit" id="btn-add-servico">➕ Adicionar</button>
+            <button class="btn-modal cancel" id="btn-cancelar-servico" hidden>Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="servicos-lista"></div>
+    </section>
+
   </main>
 </div>
 
@@ -231,6 +268,24 @@
       <button class="btn-modal cancel" id="edit-cancelar">Cancelar</button>
       <button class="btn-modal save" id="edit-salvar">Salvar alterações</button>
     </div>
+  </div>
+</div>
+
+<!-- ── MODAL DE PRIMEIRO ACESSO (onboarding) ── -->
+<div class="modal-overlay" id="onboarding-overlay" hidden>
+  <div class="modal onboarding">
+    <div class="onb-icon">💧</div>
+    <h3>Bem-vindo ao LavaSync!</h3>
+    <p class="onb-texto">
+      Antes de começar, quer cadastrar os <b>serviços que você oferece</b>
+      e o <b>preço de cada um</b>? Assim o valor preenche sozinho toda vez
+      que você registrar uma lavagem.
+    </p>
+    <div class="onb-acoes">
+      <button class="btn-submit" id="onb-adicionar">Cadastrar agora</button>
+      <button class="btn-ghost" id="onb-pular">Pular por enquanto</button>
+    </div>
+    <p class="onb-rodape">Você pode fazer isso depois em <b>Opções</b>.</p>
   </div>
 </div>
 
