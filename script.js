@@ -52,7 +52,16 @@ function toast(texto) {
 const authScreen = document.getElementById("auth-screen");
 function mostrarLogin() { authScreen.hidden = false; }
 
-async function entrarNoApp() {
+async function entrarNoApp(pularChecagemSenha) {
+  // Troca de senha obrigatória (primeiro acesso ou reset pela CL Digital)
+  if (!pularChecagemSenha) {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user && user.user_metadata && user.user_metadata.precisa_trocar_senha) {
+      abrirTrocaSenha();   // o app só abre depois de criar a senha
+      return;
+    }
+  }
+
   const { data: perfil, error } = await sb.from("perfis").select("lava_jato_id, nome, papel").maybeSingle();
   if (error || !perfil || !perfil.lava_jato_id) {
     const erro = document.getElementById("auth-erro");
@@ -66,8 +75,12 @@ async function entrarNoApp() {
   const { data: lj } = await sb.from("lava_jatos").select("nome").eq("id", LAVA_JATO_ID).maybeSingle();
   if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;
 
+  const ehDono = (PAPEL === "dono");
   // Opções (gestão de serviços/preços) só aparece para o dono
-  document.getElementById("nav-opcoes").hidden = (PAPEL !== "dono");
+  document.getElementById("nav-opcoes").hidden = !ehDono;
+  // Atendente não edita valores: o campo fica travado (preenche pelo preço do serviço)
+  document.getElementById("valor_servico").readOnly = !ehDono;
+  document.getElementById("edit-valor").readOnly = !ehDono;
 
   authScreen.hidden = true;
   await carregarServicos();
@@ -93,6 +106,52 @@ async function fazerLogin() {
 document.getElementById("btn-login").addEventListener("click", fazerLogin);
 document.getElementById("login-senha").addEventListener("keydown", (e) => { if (e.key === "Enter") fazerLogin(); });
 document.getElementById("btn-logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+// "Esqueci minha senha" → orienta a contatar a CL Digital
+document.getElementById("btn-esqueci").addEventListener("click", () => {
+  const aviso = document.getElementById("auth-aviso");
+  const contatoEl = document.getElementById("auth-contato");
+  if (typeof CL_DIGITAL_CONTATO !== "undefined" && CL_DIGITAL_CONTATO) {
+    contatoEl.textContent = "Contato: " + CL_DIGITAL_CONTATO;
+    contatoEl.hidden = false;
+  }
+  aviso.hidden = false;
+});
+
+// Popup OBRIGATÓRIO de criar senha própria
+function abrirTrocaSenha() {
+  const erro = document.getElementById("senha-erro");
+  erro.hidden = true;
+  document.getElementById("nova-senha").value = "";
+  document.getElementById("conf-senha").value = "";
+  document.getElementById("senha-overlay").hidden = false;
+  document.getElementById("nova-senha").focus();
+}
+
+async function salvarNovaSenha() {
+  const s1 = document.getElementById("nova-senha").value;
+  const s2 = document.getElementById("conf-senha").value;
+  const erro = document.getElementById("senha-erro");
+  erro.hidden = true;
+  if (s1.length < 6) { erro.textContent = "A senha precisa ter ao menos 6 caracteres."; erro.hidden = false; return; }
+  if (s1 !== s2) { erro.textContent = "As senhas não conferem."; erro.hidden = false; return; }
+
+  const btn = document.getElementById("btn-salvar-senha");
+  btn.disabled = true; btn.textContent = "Salvando...";
+  const { error } = await sb.auth.updateUser({ password: s1, data: { precisa_trocar_senha: false } });
+  btn.disabled = false; btn.textContent = "Salvar e entrar";
+  if (error) {
+    erro.textContent = "Não foi possível salvar. Saia e entre de novo. (" + (error.message || "") + ")";
+    erro.hidden = false;
+    return;
+  }
+  document.getElementById("senha-overlay").hidden = true;
+  toast("✔ Senha atualizada!");
+  await entrarNoApp(true);   // já sem o flag → entra normalmente
+}
+
+document.getElementById("btn-salvar-senha").addEventListener("click", salvarNovaSenha);
+document.getElementById("conf-senha").addEventListener("keydown", (e) => { if (e.key === "Enter") salvarNovaSenha(); });
 
 // ── 1. HAMBÚRGUER ─────────────────────────────
 
