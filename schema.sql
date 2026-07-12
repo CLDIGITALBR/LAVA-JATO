@@ -55,6 +55,18 @@ create table if not exists public.lavagens (
 create index if not exists idx_lavagens_tenant_status
   on public.lavagens (lava_jato_id, status);
 
+-- Tabela de serviços/preços — cada lava-jato monta a própria lista
+create table if not exists public.servicos (
+  id            uuid primary key default gen_random_uuid(),
+  lava_jato_id  uuid not null references public.lava_jatos(id) on delete cascade,
+  nome          text not null,
+  preco         numeric(10,2) default 0,
+  ativo         boolean default true,
+  criado_em     timestamptz default now()
+);
+create index if not exists idx_servicos_tenant
+  on public.servicos (lava_jato_id);
+
 
 -- =====================================================================
 --  2. FUNÇÃO AUXILIAR
@@ -72,6 +84,21 @@ as $$
   select lava_jato_id from public.perfis where id = auth.uid();
 $$;
 
+-- Retorna true se o usuário logado é 'dono' (usado para liberar a
+-- gestão de serviços/preços só para o dono).
+create or replace function public.sou_dono()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.perfis
+    where id = auth.uid() and papel = 'dono'
+  );
+$$;
+
 
 -- =====================================================================
 --  3. ROW LEVEL SECURITY (o coração da segurança multi-tenant)
@@ -82,6 +109,7 @@ $$;
 alter table public.lava_jatos enable row level security;
 alter table public.perfis     enable row level security;
 alter table public.lavagens   enable row level security;
+alter table public.servicos   enable row level security;
 
 -- PERFIS: o usuário só vê o próprio perfil
 drop policy if exists perfil_proprio on public.perfis;
@@ -109,6 +137,24 @@ create policy lavagens_update on public.lavagens
 drop policy if exists lavagens_delete on public.lavagens;
 create policy lavagens_delete on public.lavagens
   for delete using (lava_jato_id = public.meu_lava_jato());
+
+-- SERVIÇOS: todos do lava-jato leem; só o DONO cria/edita/remove
+drop policy if exists servicos_select on public.servicos;
+create policy servicos_select on public.servicos
+  for select using (lava_jato_id = public.meu_lava_jato());
+
+drop policy if exists servicos_insert on public.servicos;
+create policy servicos_insert on public.servicos
+  for insert with check (lava_jato_id = public.meu_lava_jato() and public.sou_dono());
+
+drop policy if exists servicos_update on public.servicos;
+create policy servicos_update on public.servicos
+  for update using (lava_jato_id = public.meu_lava_jato() and public.sou_dono())
+  with check (lava_jato_id = public.meu_lava_jato() and public.sou_dono());
+
+drop policy if exists servicos_delete on public.servicos;
+create policy servicos_delete on public.servicos
+  for delete using (lava_jato_id = public.meu_lava_jato() and public.sou_dono());
 
 
 -- =====================================================================
