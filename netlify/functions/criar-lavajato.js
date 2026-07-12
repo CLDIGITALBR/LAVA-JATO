@@ -105,6 +105,7 @@ exports.handler = async (event) => {
 
       const { data: u, error: ue } = await admin.auth.admin.createUser({
         email, password: senha, email_confirm: true,
+        user_metadata: { precisa_trocar_senha: true },
       });
       if (ue) return resposta(400, { erro: "Erro ao criar usuário: " + ue.message });
       const uid = u.user.id;
@@ -139,6 +140,7 @@ exports.handler = async (event) => {
 
       const { data: u, error: ue } = await admin.auth.admin.createUser({
         email, password: senha, email_confirm: true,
+        user_metadata: { precisa_trocar_senha: true },
       });
       if (ue) return resposta(400, { erro: "Erro ao criar usuário: " + ue.message });
       const uid = u.user.id;
@@ -156,9 +158,26 @@ exports.handler = async (event) => {
       return resposta(200, { ok: true });
     }
 
+    // -- resetar senha (senha provisória) ----------
+    //    Define uma nova senha e marca a conta para trocar
+    //    a senha obrigatoriamente no próximo login.
+    if (acao === "resetar_senha") {
+      const { uid, senha } = body;
+      if (!uid || !senha)
+        return resposta(400, { erro: "UID do login e a nova senha são obrigatórios." });
+      if (String(senha).length < 6)
+        return resposta(400, { erro: "A senha precisa ter ao menos 6 caracteres." });
+
+      const { error } = await admin.auth.admin.updateUserById(uid, {
+        password: senha,
+        user_metadata: { precisa_trocar_senha: true },
+      });
+      if (error) return resposta(500, { erro: "Erro ao redefinir a senha: " + error.message });
+      return resposta(200, { ok: true });
+    }
+
     // -- remover login (usuário) --------------------
-    if (acao === "remover_login") {
-      const { uid } = body;
+    if (acao === "remover_login") {      const { uid } = body;
       if (!uid) return resposta(400, { erro: "UID do login é obrigatório." });
       const { error } = await admin.auth.admin.deleteUser(uid); // cascata remove o perfil
       if (error) return resposta(500, { erro: "Erro ao remover login: " + error.message });
