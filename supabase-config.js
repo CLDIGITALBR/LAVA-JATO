@@ -20,4 +20,4 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Contato da CL Digital mostrado no "Esqueci minha senha".
 // Edite com o WhatsApp/e-mail reais. Deixe "" para não exibir contato.
-const CL_DIGITAL_CONTATO = "WhatsApp (00) 00000-0000 · contato@cldigital.com";
+const CL_DIGITAL_CONTATO = "WhatsApp (11) 91517-9254";
