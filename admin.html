@@ -19,7 +19,6 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:var(--font-text);background:var(--page);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
 
-    /* Barra de vidro no topo */
     .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 28px;background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.08);}
     .topbar .brand{display:flex;align-items:center;gap:9px;}
     .topbar .brand svg{width:20px;height:20px;}
@@ -68,7 +67,6 @@
     .list-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;}
     .list-head .count{font-size:15px;color:var(--faint);}
 
-    /* Card de lava-jato */
     .lj{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px 28px;margin-bottom:16px;}
     .lj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;}
     .lj-nome{font-size:18px;font-weight:600;letter-spacing:-0.01em;}
@@ -88,11 +86,29 @@
     .add-login .btn{padding:10px 16px;font-size:14px;background:var(--text);}
     .empty{color:var(--faint);font-size:15px;text-align:center;padding:20px;}
 
+    /* ── status / plano / acesso ─────────────── */
+    .status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+    .badge-plano{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:#f0f5ff;color:var(--brand);}
+    .badge-plano.mensal{background:#e9f9ef;color:var(--green);}
+    .badge-ativo{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;background:#e9f9ef;color:var(--green);}
+    .badge-ativo.inativo{background:#fdeceb;color:var(--red);}
+    .dias-info{font-size:13px;color:var(--muted);}
+
+    .controles-lj{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:var(--page);padding:14px;border-radius:12px;margin-bottom:14px;}
+    .ctrl-group{display:flex;flex-direction:column;gap:6px;min-width:150px;}
+    .ctrl-group label{margin-bottom:0;}
+    .ctrl-group .linha{display:flex;gap:8px;}
+    .ctrl-group select,.ctrl-group input{padding:9px 12px;border-radius:10px;font-size:14px;}
+    .ctrl-group .btn-x{padding:9px 13px;}
+    .btn-bloquear:hover{background:#fdeceb;color:var(--red);border-color:#f6cac7;}
+    .btn-liberar:hover{background:#e9f9ef;color:var(--green);border-color:#bfe8cf;}
+
     @media(max-width:640px){
       .wrap{padding:36px 18px 64px;}
       .head h1{font-size:30px;}
       .grid{grid-template-columns:1fr;}
       .add-login{grid-template-columns:1fr;}
+      .controles-lj{flex-direction:column;align-items:stretch;}
     }
   </style>
 </head>
@@ -115,7 +131,7 @@
 
   <div class="head">
     <p class="eyebrow">Console CL Digital</p>
-    <h1>Gestão de lava-jatos.</h1>
+    <h1>Gestão de lava-jatos</h1>
     <p class="sub">Cadastre clientes, gerencie logins e acompanhe a base — tudo em um só lugar.</p>
   </div>
 
@@ -144,12 +160,25 @@
           <input type="text" id="nome" placeholder="Ex: Lava-Jato do Zé">
         </div>
         <div><label for="telefone">Telefone</label><input type="tel" id="telefone" placeholder="(11) 99999-9999"></div>
-        <div><label for="cor">Cor principal</label><input type="color" id="cor" class="cor-input" value="#0071e3"></div>
-        <div class="full"><label for="nome_dono">Nome do dono</label><input type="text" id="nome_dono" placeholder="Ex: José"></div>
+        <div><label for="endereco">Endereço</label><input type="text" id="endereco" placeholder="Ex: Avenida xxx, n°xxx"></div>
+        <div><label for="cep">CEP</label><input type="text" id="cep" placeholder="Ex: 99999-999"></div>
+        <div><label for="cidade">Cidade</label><input type="text" id="cidade" placeholder="Ex: São Paulo"></div>
+        <div><label for="bairro">Bairro</label><input type="text" id="bairro" placeholder="Ex: Liberdade"></div>
+        <div>
+          <label for="plano">Plano</label>
+          <select id="plano">
+            <option value="Free Trial">Free Trial</option>
+            <option value="Mensal">Mensal</option>
+          </select>
+        </div>
+        <div><label for="dias">Dias Acesso</label><input type="number" id="dias" placeholder="Ex: 15" value="15"></div>
+        <div><label for="mensalidade">Mensalidade</label><input type="number" id="mensalidade" placeholder="Ex: 50,00"></div>
+        <div class="full"><label for="nome_dono">Nome do dono</label><input type="text" id="nome_dono" placeholder="Ex: Jos da Silva"></div>
         <div><label for="email">E-mail de login</label><input type="email" id="email" placeholder="dono@lavajato.com"></div>
         <div><label for="senha">Senha inicial</label><input type="text" id="senha" placeholder="mín. 6 caracteres"></div>
         <div class="full"><button class="btn full" id="btn-criar">Cadastrar lava-jato</button></div>
       </div>
+      <p class="hint">Todo novo cadastro entra como <b>Free Trial</b> com <b>15 dias</b> de acesso por padrão. Ajuste o campo "Dias Acesso" se quiser um valor diferente.</p>
       <div class="msg" id="msg"></div>
     </div>
   </section>
@@ -193,8 +222,16 @@
     if (!token()) return mostrar("err", "Informe o token de admin primeiro.");
     const p = {
       acao:"criar_lavajato",
-      nome:$("nome").value.trim(), telefone:$("telefone").value.trim(),
-      cor:$("cor").value, nome_dono:$("nome_dono").value.trim(),
+      nome:$("nome").value.trim(),
+      telefone:$("telefone").value.trim(),
+      endereco:$("endereco").value.trim(),
+      cep:$("cep").value.trim(),
+      cidade:$("cidade").value.trim(),
+      bairro:$("bairro").value.trim(),
+      plano:$("plano").value,
+      dias_acesso: $("dias").value ? Number($("dias").value) : null,
+      mensalidade: $("mensalidade").value ? Number($("mensalidade").value) : null,
+      nome_dono:$("nome_dono").value.trim(),
       email:$("email").value.trim(), senha:$("senha").value,
     };
     if (!p.nome || !p.email || !p.senha) return mostrar("err", "Preencha nome, e-mail e senha.");
@@ -202,7 +239,10 @@
     try {
       await api("POST", p);
       mostrar("ok", `✔ "${p.nome}" cadastrado! Login: ${p.email} / senha: ${p.senha}`);
-      ["nome","telefone","nome_dono","email","senha"].forEach((id)=>($(id).value=""));
+      ["nome","telefone","endereco","cep","cidade","bairro","mensalidade","nome_dono","email","senha"]
+        .forEach((id)=>($(id).value=""));
+      $("plano").value = "Free Trial";
+      $("dias").value = "15";
       listar();
     } catch(e){ mostrar("err", e.message); }
     finally { $("btn-criar").disabled=false; $("btn-criar").textContent="Cadastrar lava-jato"; }
@@ -217,7 +257,10 @@
       const data = await api("GET");
       const arr = data.lava_jatos || [];
       if (arr.length === 0) { box.innerHTML='<p class="empty">Nenhum lava-jato cadastrado ainda.</p>'; return; }
-      box.innerHTML = arr.map((lj) => `
+      box.innerHTML = arr.map((lj) => {
+        const inativo = lj.ativo === false;
+        const ehMensal = lj.plano === "Mensal";
+        return `
         <div class="lj">
           <div class="lj-head">
             <div>
@@ -226,6 +269,39 @@
             </div>
             <button class="btn-del-lj" onclick="removerLavajato('${lj.id}','${esc(lj.nome)}')">🗑 Apagar lava-jato</button>
           </div>
+
+          <div class="status-row">
+            <span class="badge-plano ${ehMensal ? 'mensal' : ''}">${esc(lj.plano)}</span>
+            <span class="badge-ativo ${inativo ? 'inativo' : ''}">${inativo ? 'Inativo' : 'Ativo'}</span>
+            ${!ehMensal ? `<span class="dias-info">${lj.dias_acesso ?? 0} dia(s) restante(s)</span>` : ''}
+          </div>
+
+          <div class="controles-lj">
+            <div class="ctrl-group">
+              <label>Plano</label>
+              <div class="linha">
+                <select id="plano-${lj.id}">
+                  <option value="Free Trial" ${!ehMensal ? 'selected' : ''}>Free Trial</option>
+                  <option value="Mensal" ${ehMensal ? 'selected' : ''}>Mensal</option>
+                </select>
+                <button class="btn-x" onclick="mudarPlano('${lj.id}')">Salvar</button>
+              </div>
+            </div>
+            <div class="ctrl-group">
+              <label>+ Dias de crédito</label>
+              <div class="linha">
+                <input type="number" id="dias-credito-${lj.id}" placeholder="Ex: 15" min="1">
+                <button class="btn-x" onclick="adicionarDias('${lj.id}')">Adicionar</button>
+              </div>
+            </div>
+            <div class="ctrl-group">
+              <label>Acesso</label>
+              <button class="btn-x ${inativo ? 'btn-liberar' : 'btn-bloquear'}" onclick="alternarAtivo('${lj.id}', ${inativo})">
+                ${inativo ? '🔓 Liberar acesso' : '🔒 Bloquear acesso'}
+              </button>
+            </div>
+          </div>
+
           <ul class="logins">
             ${(lj.usuarios||[]).map((u)=>`
               <li class="login-item">
@@ -244,7 +320,8 @@
             </div>
             <button class="btn" onclick="adicionarLogin('${lj.id}')">+ Login</button>
           </div>
-        </div>`).join("");
+        </div>`;
+      }).join("");
     } catch(e){ box.innerHTML = `<p class="empty" style="color:var(--red);">${esc(e.message)}</p>`; }
   }
   $("btn-listar").addEventListener("click", listar);
@@ -274,7 +351,8 @@
   }
 
   // Remover login
-  async function removerLogin(uid, email) {    if (!confirm(`Remover o login ${email}? Essa pessoa perde o acesso.`)) return;
+  async function removerLogin(uid, email) {
+    if (!confirm(`Remover o login ${email}? Essa pessoa perde o acesso.`)) return;
     try { await api("POST", { acao:"remover_login", uid }); mostrar("ok","Login removido."); listar(); }
     catch(e){ mostrar("err", e.message); }
   }
@@ -284,6 +362,39 @@
     if (!confirm(`APAGAR o lava-jato "${nome}"?\n\nIsso remove TODOS os logins e TODAS as lavagens dele. Não dá pra desfazer.`)) return;
     try { await api("POST", { acao:"remover_lavajato", lava_jato_id:id }); mostrar("ok",`Lava-jato "${nome}" apagado.`); listar(); }
     catch(e){ mostrar("err", e.message); }
+  }
+
+  // Mudar plano (Free Trial <-> Mensal)
+  async function mudarPlano(ljId) {
+    const plano = $("plano-"+ljId).value;
+    try {
+      await api("POST", { acao:"mudar_plano", lava_jato_id: ljId, plano });
+      mostrar("ok", `✔ Plano atualizado para ${plano}.`);
+      listar();
+    } catch(e){ mostrar("err", e.message); }
+  }
+
+  // Adicionar dias de crédito (soma ao saldo atual)
+  async function adicionarDias(ljId) {
+    const inputEl = $("dias-credito-"+ljId);
+    const dias = Number(inputEl.value);
+    if (!dias || dias <= 0) return mostrar("err", "Informe uma quantidade de dias válida.");
+    try {
+      await api("POST", { acao:"adicionar_dias", lava_jato_id: ljId, dias });
+      mostrar("ok", `✔ ${dias} dia(s) adicionado(s).`);
+      listar();
+    } catch(e){ mostrar("err", e.message); }
+  }
+
+  // Bloquear / liberar acesso (login fica travado quando inativo)
+  async function alternarAtivo(ljId, ativarNovamente) {
+    const acaoTexto = ativarNovamente ? "liberar o acesso" : "bloquear o acesso";
+    if (!confirm(`Confirma que deseja ${acaoTexto} deste lava-jato?`)) return;
+    try {
+      await api("POST", { acao:"alternar_ativo", lava_jato_id: ljId, ativo: ativarNovamente });
+      mostrar("ok", `✔ Acesso ${ativarNovamente ? "liberado" : "bloqueado"}.`);
+      listar();
+    } catch(e){ mostrar("err", e.message); }
   }
 </script>
 </body>

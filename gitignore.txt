@@ -1,0 +1,17 @@
+# Dependências / sistema
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Ambiente e segredos — NUNCA versionar chaves privadas
+.env
+.env.*
+*service_role*
+*.key
+
+# Netlify
+.netlify/
+
+# Editores
+.vscode/
+.idea/

@@ -11,6 +11,59 @@ let editandoServicoId = null;  // id do serviço sendo editado (tela Opções)
 
 // ── HELPERS ───────────────────────────────────
 
+// ── COR DO SISTEMA ────────────────────────────
+
+const CORES_PRESET = ["#0071e3", "#ff3b30", "#137a45", "#b26a00", "#8e44ec", "#1d1d1f"];
+
+function aplicarCor(hex) {
+  document.documentElement.style.setProperty("--brand", hex);
+}
+
+function getCorBrand() {
+  return (getComputedStyle(document.documentElement).getPropertyValue("--brand") || "#0071e3").trim();
+}
+
+function hexToRgba(hex, alpha) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function montarPresetsDeCor() {
+  const container = document.getElementById("cor-presets");
+  if (!container) return;
+  container.innerHTML = CORES_PRESET.map((c) =>
+    `<button type="button" class="cor-preset" style="background:${c}" data-cor="${c}" title="${c}"></button>`
+  ).join("");
+  container.querySelectorAll(".cor-preset").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const cor = btn.dataset.cor;
+      document.getElementById("cor-principal").value = cor;
+      aplicarCor(cor); // prévia instantânea
+    });
+  });
+}
+
+document.getElementById("btn-salvar-cor").addEventListener("click", salvarCor);
+document.getElementById("cor-principal").addEventListener("input", (e) => aplicarCor(e.target.value));
+
+async function salvarCor() {
+  if (PAPEL !== "dono") { toast("Apenas o dono pode alterar a cor do sistema."); return; }
+  const hex = document.getElementById("cor-principal").value;
+  const { error } = await sb.from("lava_jatos").update({ cor_principal: hex }).eq("id", LAVA_JATO_ID);
+  if (error) { console.error(error); toast("❌ Erro ao salvar a cor."); return; }
+  aplicarCor(hex);
+  toast("✔ Cor do sistema atualizada!");
+  if (document.getElementById("page-dashboard").classList.contains("active")) {
+    const concluidas = await renderDashboardCards();
+    renderGraficoFaturamento(concluidas);
+    await renderGraficoVolume30Dias();
+    await renderGraficoPicoSemanal();
+  }
+}
+
 function formatarBRL(valor) {
   return (Number(valor) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -35,7 +88,7 @@ function linkWhatsApp(reg) {
   let numero = (reg.telefone_cliente || "").replace(/\D/g, "");
   if (numero && !numero.startsWith("55")) numero = "55" + numero;
   const primeiroNome = (reg.nome_cliente || "").split(" ")[0] || "";
-  const msg = `Olá ${primeiroNome}! 🚗 Seu ${reg.marca} ${reg.modelo} (${reg.placa}) já está pronto aqui no lava-jato. Serviço: ${reg.servico}. Pode retirar quando quiser. 💧`;
+  const msg = `Olá ${primeiroNome}! Seu ${reg.marca} ${reg.modelo} (${reg.placa}) já está pronto aqui no lava-jato. Serviço: ${reg.servico}. Pode retirar quando quiser.`;
   return `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
 }
 function toast(texto) {
@@ -45,6 +98,138 @@ function toast(texto) {
   requestAnimationFrame(() => el.classList.add("show"));
   clearTimeout(toast._t);
   toast._t = setTimeout(() => { el.classList.remove("show"); setTimeout(() => (el.hidden = true), 300); }, 3000);
+}
+
+// ── HELPERS DE DATA (dashboard) ───────────────
+
+function inicioDia(data = new Date()) {
+  const d = new Date(data);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+function somaDias(data, dias) {
+  const d = new Date(data);
+  d.setDate(d.getDate() + dias);
+  return d;
+}
+function inicioSemana(data = new Date()) {
+  // segunda-feira como 1º dia: getDay() dá 0=domingo...6=sábado
+  const dia = data.getDay();
+  const diffParaSegunda = dia === 0 ? -6 : 1 - dia;
+  return inicioDia(somaDias(data, diffParaSegunda));
+}
+function inicioMes(data = new Date()) {
+  return new Date(data.getFullYear(), data.getMonth(), 1);
+}
+
+// ── FILTRO POR PERÍODO ────────────────────────
+// [inicio, fim) — inclui o início, exclui o fim. Isso evita contar
+// a mesma lavagem duas vezes na fronteira entre dois períodos.
+function filtrarPorPeriodo(lista, inicio, fim) {
+  return lista.filter((r) => {
+    const d = new Date(r.concluido_em);
+    return d >= inicio && d < fim;
+  });
+}
+
+// ── AGREGADOS ──────────────────────────────────
+
+function calcularMetricas(lista) {
+  const fat = lista.reduce((s, r) => s + Number(r.valor_servico), 0);
+  const qtd = lista.length;
+  const ticket = qtd ? fat / qtd : 0;
+  return { fat, qtd, ticket };
+}
+
+function tempoMedioMinutos(lista) {
+  const validos = lista.filter((r) => r.criado_em && r.concluido_em);
+  if (!validos.length) return 0;
+  const totalMs = validos.reduce(
+    (s, r) => s + (new Date(r.concluido_em) - new Date(r.criado_em)), 0
+  );
+  return Math.round(totalMs / validos.length / 60000); // ms → min
+}
+
+function topServicos(lista, n = 5) {
+  const contagem = {};
+  lista.forEach((r) => { contagem[r.servico] = (contagem[r.servico] || 0) + 1; });
+  return Object.entries(contagem)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n);
+}
+
+// ── RENDER DOS CARDS DO DASHBOARD ─────────────
+
+async function renderDashboardCards() {
+  const concluidas = await buscarLavagens("concluida");
+  const doMes = filtrarPorPeriodo(concluidas, inicioMes(), somaDias(new Date(), 1));
+
+  const { fat, qtd, ticket } = calcularMetricas(doMes);
+  document.getElementById("dash-fat-mes").textContent = formatarBRL(fat);
+  document.getElementById("dash-ticket-mes").textContent = formatarBRL(ticket);
+  document.getElementById("dash-qtd-mes").textContent = qtd;
+  document.getElementById("dash-tempo-medio").textContent = tempoMedioMinutos(doMes) + " min";
+
+  const top3 = topServicos(doMes, 5);
+  const container = document.getElementById("dash-top3");
+  container.innerHTML = top3.length
+    ? top3.map(([nome, c], i) => `
+        <div class="top3-item">
+          <span class="top3-pos">${i + 1}º</span>
+          <span class="top3-nome">${nome}</span>
+          <span class="top3-qtd">${c}x</span>
+        </div>`).join("")
+    : `<p style="color:var(--muted);font-size:14px;">Sem lavagens este mês ainda.</p>`;
+
+  return concluidas; // reaproveitado pelo gráfico
+}
+
+// ── GRÁFICO: FATURAMENTO COMPARATIVO ──────────
+
+let chartFaturamento = null;
+
+function renderGraficoFaturamento(concluidas) {
+  const hoje = inicioDia();
+  const ontem = somaDias(hoje, -1);
+  const semanaAtual = inicioSemana();
+  const semanaPassada = somaDias(semanaAtual, -7);
+  const mesAtual = inicioMes();
+  const mesPassado = inicioMes(new Date(mesAtual.getFullYear(), mesAtual.getMonth() - 1, 1));
+
+  const fatHoje = calcularMetricas(filtrarPorPeriodo(concluidas, hoje, somaDias(hoje, 1))).fat;
+  const fatOntem = calcularMetricas(filtrarPorPeriodo(concluidas, ontem, hoje)).fat;
+  const fatSemanaAtual = calcularMetricas(filtrarPorPeriodo(concluidas, semanaAtual, somaDias(semanaAtual, 7))).fat;
+  const fatSemanaPassada = calcularMetricas(filtrarPorPeriodo(concluidas, semanaPassada, semanaAtual)).fat;
+  const fatMesAtual = calcularMetricas(filtrarPorPeriodo(concluidas, mesAtual, somaDias(mesAtual, 31))).fat;
+  const fatMesPassado = calcularMetricas(filtrarPorPeriodo(concluidas, mesPassado, mesAtual)).fat;
+
+  const ctx = document.getElementById("chart-faturamento");
+  if (chartFaturamento) chartFaturamento.destroy(); // evita empilhar gráficos ao voltar pra página
+
+  chartFaturamento = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Ontem", "Hoje", "Semana passada", "Esta semana", "Mês passado", "Este mês"],
+      datasets: [{
+        data: [fatOntem, fatHoje, fatSemanaPassada, fatSemanaAtual, fatMesPassado, fatMesAtual],
+        backgroundColor: ["#d2d2d7", getCorBrand(), "#d2d2d7", getCorBrand(), "#d2d2d7", getCorBrand()],
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => formatarBRL(ctx.parsed.y),
+          },
+        },
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: (v) => formatarBRL(v) } } },
+    },
+  });
 }
 
 // ── 0. LOGIN / SESSÃO ─────────────────────────
@@ -72,8 +257,26 @@ async function entrarNoApp(pularChecagemSenha) {
   }
   LAVA_JATO_ID = perfil.lava_jato_id;
   PAPEL = perfil.papel || "atendente";
+  /*AS LINHAS ABAIXO DEIXAM FIXO A COR AZUL
   const { data: lj } = await sb.from("lava_jatos").select("nome").eq("id", LAVA_JATO_ID).maybeSingle();
-  if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;
+  if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;*/
+
+  // AS LINHAS ABAIXO SALVAM A VARIAÇÃO DE COR ESCOLHIDA PELO CLIENTE
+    const { data: lj } = await sb.from("lava_jatos").select("nome, cor_principal, ativo").eq("id", LAVA_JATO_ID).maybeSingle();
+
+    if (lj && lj.ativo === false) {
+      const erro = document.getElementById("auth-erro");
+      erro.textContent = "Acesso bloqueado. Entre em contato com o suporte.";
+      erro.hidden = false;
+      await sb.auth.signOut();
+      return;
+    }
+
+    if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;
+    const corSalva = (lj && lj.cor_principal) || "#0071e3";
+    aplicarCor(corSalva);
+    document.getElementById("cor-principal").value = corSalva;
+    montarPresetsDeCor();
 
   const ehDono = (PAPEL === "dono");
   // Opções (gestão de serviços/preços) só aparece para o dono
@@ -177,9 +380,169 @@ navItems.forEach((btn) => {
     if (alvo === "fila") await renderFila();
     if (alvo === "lavagens") await renderHistorico();
     if (alvo === "opcoes") await carregarServicos();
+    if (alvo === "dashboard") {
+      const concluidas = await renderDashboardCards();
+      renderGraficoFaturamento(concluidas);
+      await renderGraficoVolume30Dias();
+      await renderGraficoPicoSemanal();
+    }
     fecharSidebar();
   });
 });
+
+// ── HELPERS: janelas de dias e contagem por dia/hora ──
+
+function ultimosNDias(n) {
+  const hoje = inicioDia();
+  const dias = [];
+  for (let i = n - 1; i >= 0; i--) dias.push(somaDias(hoje, -i));
+  return dias;
+}
+
+// conta por criado_em (data de registro), não por conclusão
+function contarPorDia(lista, dias) {
+  return dias.map((dia) => {
+    const fimDia = somaDias(dia, 1);
+    return lista.filter((r) => {
+      const d = new Date(r.criado_em);
+      return d >= dia && d < fimDia;
+    }).length;
+  });
+}
+
+// ── GRÁFICO: VOLUME DE LAVAGENS (30 dias corridos) ──
+
+let chartVolume30 = null;
+
+async function renderGraficoVolume30Dias() {
+  const todas = await buscarLavagens(); // sem filtro de status = tudo que foi registrado
+  const dias = ultimosNDias(30);
+  const contagens = contarPorDia(todas, dias);
+  const labels = dias.map((d) => formatarData(d));
+
+  const ctx = document.getElementById("chart-volume-30dias");
+  if (chartVolume30) chartVolume30.destroy();
+
+  chartVolume30 = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Lavagens registradas",
+        data: contagens,
+        borderColor: getCorBrand(),
+        backgroundColor: hexToRgba(getCorBrand(), 0.12),
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.parsed.y} lavagem(ns)`,
+          },
+        },
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+        x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+      },
+    },
+  });
+}
+
+// ── GRÁFICO: HORÁRIO DE PICO (últimos 15 dias corridos) ──
+
+let chartPicoHorario = null;
+
+// ── HELPER: contagem por hora do dia (0-23), dado um período ──
+
+function contarPorHoraPeriodo(lista, inicio, fim) {
+  const doPeriodo = filtrarPorPeriodo(lista, inicio, fim);
+  const contagem = new Array(24).fill(0);
+  doPeriodo.forEach((r) => {
+    const h = new Date(r.criado_em).getHours();
+    contagem[h]++;
+  });
+  return contagem;
+}
+
+const HORAS_LABELS = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0") + "h");
+
+// opções comuns pros gráficos de linha com comparação (tooltip + hover no eixo todo)
+function opcoesComparativoLinha() {
+  return {
+    responsive: true,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: { display: true, position: "top", labels: { boxWidth: 12, usePointStyle: true } },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} lavagem(ns)`,
+        },
+      },
+    },
+    scales: {
+      y: { beginAtZero: true, ticks: { precision: 0 } },
+    },
+  };
+}
+
+// ── GRÁFICO: PICO SEMANAL (semana atual x semana passada, por hora) ──
+
+let chartPicoSemanal = null;
+
+async function renderGraficoPicoSemanal() {
+  const todas = await buscarLavagens();
+
+  const semanaAtual = inicioSemana();
+  const fimSemanaAtual = somaDias(semanaAtual, 7);
+  const semanaPassada = somaDias(semanaAtual, -7);
+
+  const dadosAtual = contarPorHoraPeriodo(todas, semanaAtual, fimSemanaAtual);
+  const dadosPassada = contarPorHoraPeriodo(todas, semanaPassada, semanaAtual);
+
+  const ctx = document.getElementById("chart-pico-semanal");
+  if (chartPicoSemanal) chartPicoSemanal.destroy();
+
+  chartPicoSemanal = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: HORAS_LABELS,
+      datasets: [
+        {
+          label: "Semana atual",
+          data: dadosAtual,
+          borderColor: getCorBrand(),
+          backgroundColor: hexToRgba(getCorBrand(), 0.12),
+          fill: false,
+          tension: 0.3,
+          pointRadius: 2,
+        },
+        {
+          label: "Semana passada",
+          data: dadosPassada,
+          borderColor: "#ff9500",
+          backgroundColor: "rgba(255,149,0,0.12)",
+          fill: false,
+          tension: 0.3,
+          pointRadius: 2,
+        },
+      ],
+    },
+    options: opcoesComparativoLinha(),
+  });
+}
+
+// ── GRÁFICO: PICO MENSAL (mês atual x mês anterior, por hora) ──
+
+let chartPicoMensal = null;
+
 
 function irParaPagina(alvo) {
   document.querySelector('.nav-item[data-page="' + alvo + '"]').click();
