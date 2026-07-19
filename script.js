@@ -11,6 +11,7 @@ let editandoServicoId = null;  // id do serviço sendo editado (tela Opções)
 let DIAS_ACESSO = null;        // dias de crédito restantes (plano Free Trial)
 let PLANO = null;              // 'Free Trial' | 'Mensal'
 let NOME_LAVAJATO = "";        // nome do lava-jato (usado na saudação da Início)
+let AGEND_POR_DIA = 10;        // capacidade de agendamentos por dia (config do dono)
 
 // ── HELPERS ───────────────────────────────────
 
@@ -379,9 +380,6 @@ async function renderHome() {
   // meta do mês
   ULTIMO_FAT_MES = calcularMetricas(doMes).fat;
   renderMeta(ULTIMO_FAT_MES);
-
-  // dica do dia (contextual ou rotativa)
-  document.getElementById("home-dica-texto").textContent = escolherDica(fila.length);
 }
 
 // ── ALERTA: CARRO PARADO NA FILA ──────────────
@@ -685,7 +683,7 @@ async function entrarNoApp(pularChecagemSenha) {
   if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;*/
 
   // AS LINHAS ABAIXO SALVAM A VARIAÇÃO DE COR ESCOLHIDA PELO CLIENTE
-    const { data: lj, error: ljErr } = await sb.from("lava_jatos").select("nome, cor_principal, ativo, dias_acesso, plano").eq("id", LAVA_JATO_ID).maybeSingle();
+    const { data: lj, error: ljErr } = await sb.from("lava_jatos").select("nome, cor_principal, ativo, dias_acesso, plano, agendamentos_por_dia").eq("id", LAVA_JATO_ID).maybeSingle();
     if (ljErr) console.warn("[LavaSync] erro ao ler lava_jato:", ljErr.message);
 
     if (lj && lj.ativo === false) {
@@ -709,14 +707,29 @@ async function entrarNoApp(pularChecagemSenha) {
     montarPresetsDeCor();
 
   const ehDono = (PAPEL === "dono");
-  // Opções (gestão de serviços/preços) só aparece para o dono
+  // Telas de gestão (Lavagens, Opções e Dashboard) só aparecem para o dono.
+  // O funcionário fica com Início, Registrar, Agendamentos e Fila.
   document.getElementById("nav-opcoes").hidden = !ehDono;
+  document.getElementById("nav-lavagens").hidden = !ehDono;
+  document.getElementById("nav-dashboard").hidden = !ehDono;
+  const atalhoDash = document.getElementById("atalho-dashboard");
+  if (atalhoDash) atalhoDash.hidden = !ehDono;
   // Atendente não edita valores: o campo fica travado (preenche pelo preço do serviço)
   document.getElementById("valor_servico").readOnly = !ehDono;
   document.getElementById("edit-valor").readOnly = !ehDono;
+  const agValorEl = document.getElementById("ag_valor");
+  if (agValorEl) agValorEl.readOnly = !ehDono;
+
+    AGEND_POR_DIA = (lj && lj.agendamentos_por_dia != null) ? Number(lj.agendamentos_por_dia) : 10;
+    const capInput = document.getElementById("ag-capacidade");
+    if (capInput) capInput.value = AGEND_POR_DIA;
+    const capStat = document.getElementById("stat-ag-capacidade");
+    if (capStat) capStat.textContent = AGEND_POR_DIA;
 
   authScreen.hidden = true;
+  carregarTiposAgendamento();
   await carregarServicos();
+  await montarDiasDisponiveis();
   await atualizarBadge();
   await renderHome();
   verificarOnboarding();
@@ -811,6 +824,7 @@ navItems.forEach((btn) => {
     if (alvo === "home") await renderHome();
     if (alvo === "fila") await renderFila();
     if (alvo === "lavagens") await renderHistorico();
+    if (alvo === "agendamentos") { await montarDiasDisponiveis(); await renderAgendamentos(); }
     if (alvo === "opcoes") await carregarServicos();
     if (alvo === "dashboard") {
       const concluidas = await renderDashboardCards();
@@ -1065,6 +1079,8 @@ async function carregarServicos() {
   SERVICOS = error ? [] : (data || []);
   popularSelectServicos(servicoSelect, servicoSelect.value);
   popularSelectServicos(editServicoSelect, null);
+  const agServicoSelect = document.getElementById("ag_servico");
+  if (agServicoSelect) popularSelectServicos(agServicoSelect, agServicoSelect.value);
   renderServicos();
 }
 
@@ -1143,23 +1159,135 @@ async function removerServico(id) {
 document.getElementById("btn-add-servico").addEventListener("click", salvarServico);
 document.getElementById("btn-cancelar-servico").addEventListener("click", cancelarEdicaoServico);
 
-// ── ONBOARDING (primeiro acesso do dono) ──────
+// ── TOUR GUIADO COM HOLOFOTE (primeiro acesso) ─
 
+// Cada passo aponta para um elemento real da tela (alvo = seletor CSS).
+// alvo:null = passo central (boas-vindas / fim). dono:true = só para o dono.
+const COACH_PASSOS = [
+  { alvo: null, icon: "💧", titulo: "Bem-vindo ao LavaSync!", desc: "Vou te mostrar cada menu bem rapidinho. Use <b>Próximo</b> para avançar ou <b>Pular</b> quando quiser." },
+  { alvo: '.nav-item[data-page="home"]', titulo: "Início", desc: "O resumo do seu dia: movimento, faturamento, carros na fila e a meta do mês." },
+  { alvo: '.nav-item[data-page="registrar"]', titulo: "Registrar lavagem", desc: "Uma entrada nova em segundos. O <b>valor preenche sozinho</b> pelo preço do serviço." },
+  { alvo: '.nav-item[data-page="agendamentos"]', titulo: "Agendamentos", desc: "Marque lavagens para outro dia. Só aparecem os <b>dias com vaga</b>; depois é só tocar em <b>Dar entrada</b>." },
+  { alvo: '.nav-item[data-page="fila"]', titulo: "Fila de espera", desc: "Os carros aguardando. Conclua a lavagem, avise pelo WhatsApp e veja o valor previsto." },
+  { alvo: '#nav-lavagens', dono: true, titulo: "Lavagens", desc: "O histórico do que já saiu, com faturamento, ticket médio e busca por cliente ou placa." },
+  { alvo: '#nav-opcoes', dono: true, titulo: "Opções", desc: "Serviços e preços, cor do sistema e o limite de agendamentos por dia." },
+  { alvo: '#nav-dashboard', dono: true, titulo: "Dashboard", desc: "Gráficos do seu movimento: faturamento, volume e horários de pico." },
+  { alvo: null, icon: "🎉", titulo: "Tudo pronto!", desc: "É só começar. Você pode explorar à vontade — bom trabalho!" },
+];
+
+let coachPassos = [];
+let coachIndice = 0;
+let coachAtivo = false;
+
+function chaveIntro() { return "intro_v2_" + LAVA_JATO_ID + "_" + (PAPEL || "x"); }
+
+// Chamado no primeiro acesso da conta (dono ou funcionário)
 function verificarOnboarding() {
-  if (PAPEL !== "dono") return;                 // só o dono cadastra
-  if (SERVICOS.length > 0) return;              // já tem serviços → não precisa
-  if (localStorage.getItem("onboarding_pulado_" + LAVA_JATO_ID)) return; // já pulou
-  document.getElementById("onboarding-overlay").hidden = false;
+  if (!LAVA_JATO_ID) return;
+  if (localStorage.getItem(chaveIntro())) return;     // já viu o tour nesse aparelho
+  iniciarCoach();
 }
 
-document.getElementById("onb-adicionar").addEventListener("click", () => {
-  document.getElementById("onboarding-overlay").hidden = true;
-  irParaPagina("opcoes");
+function iniciarCoach() {
+  coachPassos = COACH_PASSOS.filter((p) => !p.dono || PAPEL === "dono");
+  coachIndice = 0;
+  coachAtivo = true;
+  const mobile = window.matchMedia("(max-width: 768px)").matches;
+  if (mobile) sidebar.classList.add("open");   // no celular, abre o menu para o holofote acertar os botões
+  document.getElementById("coach").hidden = false;
+  // no celular espera o menu terminar de deslizar antes de medir o botão
+  setTimeout(posicionarCoach, mobile ? 340 : 60);
+}
+
+function fecharCoach() {
+  coachAtivo = false;
+  localStorage.setItem(chaveIntro(), "1");
+  document.getElementById("coach").hidden = true;
+  if (window.matchMedia("(max-width: 768px)").matches) sidebar.classList.remove("open");
+}
+
+function posicionarPopover(r) {
+  const pop = document.getElementById("coach-pop");
+  const m = 14, pw = pop.offsetWidth, ph = pop.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let top, left;
+  if (vw - r.right > pw + m + 8) {                 // cabe à direita
+    left = r.right + m; top = r.top + r.height / 2 - ph / 2;
+  } else if (vh - r.bottom > ph + m + 8) {         // cabe embaixo
+    top = r.bottom + m; left = r.left + r.width / 2 - pw / 2;
+  } else if (r.top > ph + m + 8) {                 // cabe em cima
+    top = r.top - ph - m; left = r.left + r.width / 2 - pw / 2;
+  } else {                                         // à esquerda
+    left = r.left - pw - m; top = r.top + r.height / 2 - ph / 2;
+  }
+  left = Math.max(m, Math.min(left, vw - pw - m));
+  top = Math.max(m, Math.min(top, vh - ph - m));
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+}
+
+function posicionarCoach() {
+  if (!coachAtivo) return;
+  const p = coachPassos[coachIndice];
+  if (!p) return;
+
+  // conteúdo do balão
+  const icone = document.getElementById("coach-icone");
+  icone.textContent = p.icon || "";
+  icone.style.display = p.icon ? "block" : "none";
+  document.getElementById("coach-titulo").textContent = p.titulo;
+  document.getElementById("coach-desc").innerHTML = p.desc;
+  document.getElementById("coach-dots").innerHTML =
+    coachPassos.map((_, i) => `<span class="coach-dot${i === coachIndice ? " ativo" : ""}"></span>`).join("");
+
+  // botões
+  const ultimo = coachIndice === coachPassos.length - 1;
+  document.getElementById("coach-voltar").style.visibility = coachIndice === 0 ? "hidden" : "visible";
+  document.getElementById("coach-pular").style.visibility = ultimo ? "hidden" : "visible";
+  document.getElementById("coach-proximo").textContent = ultimo ? "Começar 🎉" : "Próximo";
+
+  // holofote + posição do balão
+  const hole = document.getElementById("coach-hole");
+  const alvo = p.alvo ? document.querySelector(p.alvo) : null;
+  if (alvo && alvo.offsetParent !== null) {
+    const r = alvo.getBoundingClientRect();
+    const pad = 8;
+    hole.classList.remove("sem-alvo");
+    hole.style.width = (r.width + pad * 2) + "px";
+    hole.style.height = (r.height + pad * 2) + "px";
+    hole.style.left = (r.left - pad) + "px";
+    hole.style.top = (r.top - pad) + "px";
+    posicionarPopover(r);
+  } else {
+    // passo central (sem alvo): escurece tudo e centraliza o balão
+    hole.classList.add("sem-alvo");
+    hole.style.width = "0px"; hole.style.height = "0px";
+    hole.style.left = (window.innerWidth / 2) + "px";
+    hole.style.top = (window.innerHeight / 2) + "px";
+    const pop = document.getElementById("coach-pop");
+    pop.style.left = ((window.innerWidth - pop.offsetWidth) / 2) + "px";
+    pop.style.top = ((window.innerHeight - pop.offsetHeight) / 2) + "px";
+  }
+}
+
+document.getElementById("coach-proximo").addEventListener("click", () => {
+  if (coachIndice < coachPassos.length - 1) { coachIndice++; posicionarCoach(); }
+  else fecharCoach();
 });
-document.getElementById("onb-pular").addEventListener("click", () => {
-  localStorage.setItem("onboarding_pulado_" + LAVA_JATO_ID, "1");
-  document.getElementById("onboarding-overlay").hidden = true;
+document.getElementById("coach-voltar").addEventListener("click", () => {
+  if (coachIndice > 0) { coachIndice--; posicionarCoach(); }
 });
+document.getElementById("coach-pular").addEventListener("click", fecharCoach);
+
+// reposiciona o holofote se a tela mudar de tamanho ou rolar
+let _coachRaf;
+function _coachReagir() {
+  if (!coachAtivo) return;
+  cancelAnimationFrame(_coachRaf);
+  _coachRaf = requestAnimationFrame(posicionarCoach);
+}
+window.addEventListener("resize", _coachReagir);
+window.addEventListener("scroll", _coachReagir, true);
 
 // ── HISTÓRICO POR PLACA: recorrência no cadastro ──
 
@@ -1258,6 +1386,7 @@ async function renderFila() {
         <div class="wash-top">
           <span class="wash-cliente">${r.nome_cliente}</span>
           <span class="badge-placa" onclick="verPlaca('${r.placa}')">${r.placa}</span>
+          ${r.de_agendamento ? `<span class="badge-agendado">📅 Agendado</span>` : ""}
         </div>
         <div class="wash-veiculo">${r.tipo_veiculo} • ${r.marca} ${r.modelo}</div>
         <div class="wash-meta">
@@ -1336,6 +1465,7 @@ document.getElementById("edit-salvar").addEventListener("click", async () => {
 // ── 7. HISTÓRICO + FINANCEIRO + POR PLACA ─────
 
 function verPlaca(placa) {
+  if (PAPEL !== "dono") return;   // funcionário não acessa o histórico/financeiro
   document.getElementById("busca-historico").value = placa;
   irParaPagina("lavagens");
 }
@@ -1409,6 +1539,317 @@ async function atualizarBadge() {
   const badge = document.getElementById("fila-badge");
   badge.textContent = lista.length;
   badge.hidden = lista.length === 0;
+}
+
+// ── 8. AGENDAMENTOS ───────────────────────────
+
+// Elementos do formulário de agendamento
+const agTipoSelect    = document.getElementById("ag_tipo");
+const agMarcaSelect   = document.getElementById("ag_marca");
+const agModeloSelect  = document.getElementById("ag_modelo");
+const agServicoSelect = document.getElementById("ag_servico");
+const agDataSelect    = document.getElementById("ag_data");
+
+// Vagas restantes por dia (preenchido em montarDiasDisponiveis)
+let VAGAS_POR_DIA = {};
+
+// ── Helpers de data (sem fuso: evita "voltar" um dia) ──
+function dataLocalStr(d) {
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+function dataDeStr(s) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(s + "T00:00:00") : new Date(s);
+}
+function rotuloDia(d) {
+  const semana = d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "");
+  const dm = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  return `${semana}, ${dm}`;
+}
+
+// ── Cascata TIPO → MARCA → MODELO (formulário de agendamento) ──
+function carregarTiposAgendamento() {
+  if (!agTipoSelect) return;
+  const tipos = [...new Set(veiculosData.map((item) => item.tipo))];
+  preencherSelect(agTipoSelect, tipos, "Selecione...");
+}
+if (agTipoSelect) {
+  agTipoSelect.addEventListener("change", () => {
+    const tipo = agTipoSelect.value;
+    if (!tipo) {
+      preencherSelect(agMarcaSelect, [], "Selecione o tipo primeiro"); agMarcaSelect.disabled = true;
+      preencherSelect(agModeloSelect, [], "Selecione a marca primeiro"); agModeloSelect.disabled = true;
+      return;
+    }
+    const marcas = [...new Set(veiculosData.filter((v) => v.tipo === tipo).map((v) => v.marca))];
+    preencherSelect(agMarcaSelect, marcas, "Selecione..."); agMarcaSelect.disabled = false;
+    preencherSelect(agModeloSelect, [], "Selecione a marca primeiro"); agModeloSelect.disabled = true;
+  });
+  agMarcaSelect.addEventListener("change", () => {
+    const tipo = agTipoSelect.value, marca = agMarcaSelect.value;
+    if (!marca) { preencherSelect(agModeloSelect, [], "Selecione a marca primeiro"); agModeloSelect.disabled = true; return; }
+    const modelos = veiculosData.filter((v) => v.tipo === tipo && v.marca === marca).map((v) => v.modelo);
+    preencherSelect(agModeloSelect, modelos, "Selecione..."); agModeloSelect.disabled = false;
+  });
+}
+// Auto-preenche o valor a partir do serviço escolhido
+if (agServicoSelect) {
+  agServicoSelect.addEventListener("change", () => {
+    const opt = agServicoSelect.selectedOptions[0];
+    if (opt && opt.dataset.preco !== undefined && opt.dataset.preco !== "") {
+      document.getElementById("ag_valor").value = opt.dataset.preco;
+    }
+  });
+}
+
+// ── Acesso aos dados ──
+async function buscarAgendamentos(status) {
+  let q = sb.from("agendamentos").select("*");
+  if (status) q = q.eq("status", status);
+  const { data, error } = await q;
+  if (error) { console.error(error); toast("❌ Erro ao carregar agendamentos."); return []; }
+  return data || [];
+}
+
+// Conta agendamentos ativos ('agendado') por dia → { "YYYY-MM-DD": n }
+function contagemPorDia(lista) {
+  const mapa = {};
+  lista.forEach((r) => {
+    if (r.status && r.status !== "agendado") return;
+    mapa[r.data_agendada] = (mapa[r.data_agendada] || 0) + 1;
+  });
+  return mapa;
+}
+
+// Monta o <select> de dias, mostrando SÓ os dias com vaga
+async function montarDiasDisponiveis(DIAS = 30) {
+  if (!agDataSelect) return;
+  const ativos = await buscarAgendamentos("agendado");
+  const usados = contagemPorDia(ativos);
+  VAGAS_POR_DIA = {};
+
+  const selecionadoAntes = agDataSelect.value;
+  const hoje = inicioDia();
+  const opcoes = [];
+  for (let i = 0; i < DIAS; i++) {
+    const d = somaDias(hoje, i);
+    const str = dataLocalStr(d);
+    const restantes = AGEND_POR_DIA - (usados[str] || 0);
+    VAGAS_POR_DIA[str] = restantes;
+    if (restantes <= 0) continue;                 // dia lotado → não aparece
+    const hoje_ = i === 0 ? "Hoje — " : "";
+    opcoes.push(
+      `<option value="${str}">${hoje_}${rotuloDia(d)} — ${restantes} vaga(s)</option>`
+    );
+  }
+
+  if (opcoes.length === 0) {
+    agDataSelect.innerHTML = `<option value="">Sem dias disponíveis nos próximos ${DIAS} dias</option>`;
+  } else {
+    agDataSelect.innerHTML = `<option value="">Selecione um dia...</option>` + opcoes.join("");
+    // mantém a escolha anterior, se ainda existir
+    if (selecionadoAntes && VAGAS_POR_DIA[selecionadoAntes] > 0) agDataSelect.value = selecionadoAntes;
+  }
+  atualizarVagasHint();
+}
+
+function atualizarVagasHint() {
+  const hint = document.getElementById("ag-vagas-hint");
+  if (!hint || !agDataSelect) return;
+  const dia = agDataSelect.value;
+  if (dia && VAGAS_POR_DIA[dia] != null) {
+    hint.innerHTML = `📅 <b>${VAGAS_POR_DIA[dia]}</b> vaga(s) livre(s) nesse dia (limite ${AGEND_POR_DIA}/dia).`;
+    hint.hidden = false;
+  } else {
+    hint.hidden = true;
+  }
+}
+if (agDataSelect) agDataSelect.addEventListener("change", atualizarVagasHint);
+
+// Mensagem de WhatsApp para CONFIRMAR o agendamento
+function linkWhatsAppAgendamento(reg) {
+  let numero = (reg.telefone_cliente || "").replace(/\D/g, "");
+  if (numero && !numero.startsWith("55")) numero = "55" + numero;
+  const primeiroNome = (reg.nome_cliente || "").split(" ")[0] || "";
+  const dia = reg.data_agendada ? dataDeStr(reg.data_agendada).toLocaleDateString("pt-BR") : "";
+  const hora = reg.hora_agendada ? ` às ${reg.hora_agendada}` : "";
+  const msg = `Olá ${primeiroNome}! Confirmando o agendamento da lavagem do seu ${reg.marca} ${reg.modelo} (${reg.placa}) para ${dia}${hora}. Serviço: ${reg.servico}. Qualquer coisa é só avisar!`;
+  return `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
+}
+
+// ── Render da tela (stats + lista por dia) ──
+async function renderAgendamentos() {
+  const capStat = document.getElementById("stat-ag-capacidade");
+  if (capStat) capStat.textContent = AGEND_POR_DIA;
+
+  const ativos = await buscarAgendamentos("agendado");
+  const hojeStr = dataLocalStr(new Date());
+  const limite7 = dataLocalStr(somaDias(inicioDia(), 6));
+
+  document.getElementById("stat-ag-hoje").textContent =
+    ativos.filter((r) => r.data_agendada === hojeStr).length;
+  document.getElementById("stat-ag-semana").textContent =
+    ativos.filter((r) => r.data_agendada >= hojeStr && r.data_agendada <= limite7).length;
+
+  // só de hoje pra frente, ordenado por dia e hora
+  const futuros = ativos
+    .filter((r) => r.data_agendada >= hojeStr)
+    .sort((a, b) =>
+      a.data_agendada === b.data_agendada
+        ? (a.hora_agendada || "").localeCompare(b.hora_agendada || "")
+        : a.data_agendada.localeCompare(b.data_agendada)
+    );
+
+  const container = document.getElementById("agendamentos-lista");
+  if (futuros.length === 0) {
+    container.innerHTML = `<div class="card"><div class="empty-state"><span class="empty-icon">📅</span><h3>Nenhum agendamento</h3><p>Os agendamentos marcados aparecem aqui, agrupados por dia</p></div></div>`;
+    return;
+  }
+
+  // agrupa por dia
+  const porDia = {};
+  futuros.forEach((r) => { (porDia[r.data_agendada] ||= []).push(r); });
+
+  container.innerHTML = Object.keys(porDia).sort().map((dia) => {
+    const itens = porDia[dia];
+    const usadas = itens.length;
+    const cabecalho = `
+      <div class="wash-meta" style="margin:22px 2px 10px; font-weight:600; color:var(--muted);">
+        <span>📅 ${rotuloDia(dataDeStr(dia))}</span>
+        <span class="badge-servico">${usadas}/${AGEND_POR_DIA} vaga(s) usada(s)</span>
+      </div>`;
+    const cards = itens.map((r) => `
+      <div class="wash-card">
+        <div class="wash-info">
+          <div class="wash-top">
+            <span class="wash-cliente">${r.nome_cliente}</span>
+            <span class="badge-placa">${r.placa || "—"}</span>
+          </div>
+          <div class="wash-veiculo">${r.tipo_veiculo || ""} • ${r.marca || ""} ${r.modelo || ""}</div>
+          <div class="wash-meta">
+            <span class="badge-servico">${r.servico || "—"}</span>
+            ${r.hora_agendada ? `<span>Horário: <b>${r.hora_agendada}</b></span>` : ""}
+            <span>Resp.: <b>${r.responsavel || "-"}</b></span>
+            <span class="wash-valor">${formatarBRL(r.valor_servico)}</span>
+          </div>
+          ${r.observacoes ? `<div class="wash-meta"><span>📝 ${r.observacoes}</span></div>` : ""}
+        </div>
+        <div class="wash-actions">
+          <button class="btn-action btn-concluir" onclick="darEntradaAgendamento('${r.id}')">🚗 Dar entrada</button>
+          <a class="btn-action btn-whats" href="${linkWhatsAppAgendamento(r)}" target="_blank" rel="noopener">📲 Confirmar</a>
+          <button class="btn-action btn-remover" onclick="cancelarAgendamento('${r.id}')">Cancelar</button>
+        </div>
+      </div>`).join("");
+    return cabecalho + cards;
+  }).join("");
+}
+
+// ── Criar agendamento (INSERT) ──
+if (document.getElementById("form-agendamento")) {
+  document.getElementById("form-agendamento").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const dia = agDataSelect.value;
+    if (!dia) { toast("Escolha um dia disponível."); return; }
+
+    // Revalida a vaga na hora (evita dois agendamentos estourarem o limite)
+    const { count, error: errCount } = await sb
+      .from("agendamentos")
+      .select("id", { count: "exact", head: true })
+      .eq("data_agendada", dia)
+      .eq("status", "agendado");
+    if (errCount) { console.error(errCount); toast("❌ Erro ao checar vagas."); return; }
+    if (count >= AGEND_POR_DIA) {
+      toast("😕 Esse dia lotou agora. Escolha outro.");
+      await montarDiasDisponiveis();
+      return;
+    }
+
+    const registro = {
+      lava_jato_id: LAVA_JATO_ID,
+      data_agendada: dia,
+      hora_agendada: document.getElementById("ag_hora").value || null,
+      nome_cliente: document.getElementById("ag_nome").value.trim(),
+      telefone_cliente: document.getElementById("ag_telefone").value.trim(),
+      responsavel: document.getElementById("ag_responsavel").value.trim(),
+      tipo_veiculo: agTipoSelect.value,
+      marca: agMarcaSelect.value,
+      modelo: agModeloSelect.value,
+      placa: document.getElementById("ag_placa").value.trim().toUpperCase(),
+      servico: agServicoSelect.value,
+      valor_servico: Number(document.getElementById("ag_valor").value) || 0,
+      observacoes: document.getElementById("ag_obs").value.trim() || null,
+      status: "agendado",
+    };
+    const { error } = await sb.from("agendamentos").insert(registro);
+    if (error) { console.error(error); toast("❌ Erro ao agendar. Tente de novo."); return; }
+
+    toast("✔ " + registro.nome_cliente + " agendado para " + dataDeStr(dia).toLocaleDateString("pt-BR") + "!");
+    tocarSom("registrar");
+    event.target.reset();
+    preencherSelect(agMarcaSelect, [], "Selecione o tipo primeiro"); agMarcaSelect.disabled = true;
+    preencherSelect(agModeloSelect, [], "Selecione a marca primeiro"); agModeloSelect.disabled = true;
+    await montarDiasDisponiveis();
+    await renderAgendamentos();
+  });
+}
+
+// Manda o agendamento para a FILA (vira uma lavagem de verdade)
+async function darEntradaAgendamento(id) {
+  const { data: r, error } = await sb.from("agendamentos").select("*").eq("id", id).single();
+  if (error || !r) { toast("❌ Não foi possível abrir o agendamento."); return; }
+
+  const registro = {
+    lava_jato_id: LAVA_JATO_ID,
+    data_entrada: dataLocalStr(new Date()),
+    nome_cliente: r.nome_cliente,
+    telefone_cliente: r.telefone_cliente,
+    responsavel: r.responsavel,
+    tipo_veiculo: r.tipo_veiculo,
+    marca: r.marca,
+    modelo: r.modelo,
+    placa: r.placa,
+    servico: r.servico,
+    valor_servico: Number(r.valor_servico) || 0,
+    status: "fila",
+    de_agendamento: true,
+  };
+  const { error: e1 } = await sb.from("lavagens").insert(registro);
+  if (e1) { console.error(e1); toast("❌ Erro ao dar entrada."); return; }
+
+  await sb.from("agendamentos").update({ status: "concluido" }).eq("id", id);
+  toast("🚗 Entrada dada — veículo enviado para a fila!");
+  tocarSom("registrar");
+  await montarDiasDisponiveis();
+  await renderAgendamentos();
+  await atualizarBadge();
+}
+
+async function cancelarAgendamento(id) {
+  if (!confirm("Cancelar este agendamento?")) return;
+  const { error } = await sb.from("agendamentos").update({ status: "cancelado" }).eq("id", id);
+  if (error) { console.error(error); toast("❌ Erro ao cancelar."); return; }
+  toast("Agendamento cancelado.");
+  await montarDiasDisponiveis();
+  await renderAgendamentos();
+}
+
+// ── Salvar capacidade (só o dono, na tela Opções) ──
+async function salvarCapacidade() {
+  if (PAPEL !== "dono") { toast("Apenas o dono pode alterar o limite."); return; }
+  const val = parseInt(document.getElementById("ag-capacidade").value, 10);
+  if (!val || val < 1) { toast("Informe um limite válido (1 ou mais)."); return; }
+  const { error } = await sb.from("lava_jatos").update({ agendamentos_por_dia: val }).eq("id", LAVA_JATO_ID);
+  if (error) { console.error(error); toast("❌ Erro ao salvar o limite."); return; }
+  AGEND_POR_DIA = val;
+  const capStat = document.getElementById("stat-ag-capacidade");
+  if (capStat) capStat.textContent = val;
+  toast("✔ Limite de " + val + " agendamento(s) por dia salvo!");
+  await montarDiasDisponiveis();
+}
+if (document.getElementById("btn-salvar-capacidade")) {
+  document.getElementById("btn-salvar-capacidade").addEventListener("click", salvarCapacidade);
 }
 
 // ── INICIALIZAÇÃO ─────────────────────────────
