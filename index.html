@@ -91,7 +91,15 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-item active" data-page="registrar">
+        <button class="nav-item active" data-page="home">
+          <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 11.5 12 4l8 7.5" />
+              <path d="M6 10v9h12v-9" />
+            </svg></span>
+          Início
+        </button>
+        <button class="nav-item" data-page="registrar">
           <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
               stroke-linecap="round">
               <path d="M12 5v14M5 12h14" />
@@ -145,8 +153,125 @@
 
 
 
+      <!-- Início / Home -->
+      <section class="page active" id="page-home">
+        <div class="page-header">
+          <h1 id="home-saudacao">Início</h1>
+          <p id="home-subtitulo">Resumo do seu lava-jato</p>
+        </div>
+
+        <!-- Plano + Clima lado a lado -->
+        <div class="home-topo">
+          <!-- Faixa de crédito -->
+          <div class="credito-banner" id="credito-banner" hidden>
+            <span class="credito-icon" id="credito-icon"></span>
+            <div class="credito-texto">
+              <strong id="credito-titulo"></strong>
+              <span id="credito-detalhe"></span>
+            </div>
+            <button class="btn-renovar" id="btn-renovar" hidden>Renovar plano</button>
+          </div>
+
+          <!-- Previsão do tempo -->
+          <div class="card clima-card" id="home-clima" hidden>
+            <div class="clima-topo">
+              <strong class="clima-cidade" id="clima-cidade">—</strong>
+              <span class="clima-agora">Tempo agora</span>
+            </div>
+            <div class="clima-atual">
+              <span class="clima-ico" id="clima-ico">🌡️</span>
+              <span class="clima-temp" id="clima-temp">--°</span>
+              <div class="clima-cond-box">
+                <span class="clima-cond" id="clima-cond"></span>
+                <span class="clima-minmax" id="clima-minmax"></span>
+              </div>
+            </div>
+            <div class="clima-stats">
+              <div class="clima-stat"><span class="cs-label">Sensação</span><span class="cs-valor" id="clima-sensacao">--°</span></div>
+              <div class="clima-stat"><span class="cs-label">Vento</span><span class="cs-valor" id="clima-vento">--</span></div>
+              <div class="clima-stat"><span class="cs-label">Umidade</span><span class="cs-valor" id="clima-umidade">--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerta: carro parado na fila -->
+        <div class="fila-alerta" id="home-fila-alerta" hidden>
+          <span class="fila-alerta-ico">⏰</span>
+          <span id="fila-alerta-texto"></span>
+        </div>
+
+        <!-- Resumo da operação (hoje) -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-value" id="home-hoje-qtd">0</span>
+            <span class="stat-label">Lavagens concluídas hoje <span id="home-hoje-trend" class="trend"></span></span>
+          </div>
+          <div class="stat-card highlight">
+            <span class="stat-value" id="home-hoje-fat">R$ 0,00</span>
+            <span class="stat-label">Faturamento de hoje</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="home-fila">0</span>
+            <span class="stat-label">Carros na fila agora</span>
+          </div>
+        </div>
+
+        <!-- Meta do mês -->
+        <div class="card meta-card">
+          <div class="meta-head">
+            <h3 class="card-titulo">Meta de faturamento do mês</h3>
+            <button class="btn-x" id="btn-editar-meta">Definir meta</button>
+          </div>
+          <div class="meta-barra"><div class="meta-preenchida" id="meta-preenchida"></div></div>
+          <p class="meta-texto" id="meta-texto">Defina uma meta de faturamento para acompanhar o progresso do mês.</p>
+          <div class="meta-editor" id="meta-editor" hidden>
+            <input type="number" id="meta-input" placeholder="Ex: 8000" min="0" step="100">
+            <button class="btn-x" id="btn-salvar-meta">Salvar</button>
+            <button class="btn-x" id="btn-cancelar-meta">Cancelar</button>
+          </div>
+        </div>
+
+        <!-- Destaques: fechamento de ontem, cliente fiel, comparativo da semana -->
+        <div class="destaques-grid">
+          <div class="card destaque-card">
+            <span class="destaque-label">📋 Fechamento de ontem</span>
+            <strong class="destaque-valor" id="home-ontem-fechamento">—</strong>
+            <span class="destaque-sub" id="home-ontem-sub"></span>
+          </div>
+          <div class="card destaque-card">
+            <span class="destaque-label">⭐ Cliente mais fiel do mês</span>
+            <strong class="destaque-valor" id="home-cliente-fiel">—</strong>
+            <span class="destaque-sub" id="home-cliente-fiel-sub"></span>
+          </div>
+          <div class="card destaque-card">
+            <span class="destaque-label">📈 Esta semana</span>
+            <strong class="destaque-valor" id="home-semana-qtd">0 lavagens</strong>
+            <span class="destaque-sub" id="home-semana-sub"></span>
+          </div>
+        </div>
+
+        <!-- Atalhos rápidos -->
+        <div class="home-atalhos">
+          <button class="atalho-btn" id="atalho-registrar">
+            <span class="atalho-ico">＋</span> Registrar lavagem
+          </button>
+          <button class="atalho-btn" id="atalho-fila">
+            <span class="atalho-ico">🚗</span> Ver a fila
+          </button>
+          <button class="atalho-btn" id="atalho-dashboard">
+            <span class="atalho-ico">📊</span> Abrir o dashboard
+          </button>
+        </div>
+
+        <!-- Dica do dia -->
+        <div class="card dica-card" id="home-dica-card">
+          <span class="dica-badge">💡 Dica</span>
+          <p class="dica-texto" id="home-dica-texto"></p>
+        </div>
+      </section>
+
       <!-- Registrar -->
-      <section class="page active" id="page-registrar">
+      <section class="page" id="page-registrar">
         <div class="page-header">
           <h1>Registrar lavagem</h1>
           <p>Uma entrada nova em segundos</p>
