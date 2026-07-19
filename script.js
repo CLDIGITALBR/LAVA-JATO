@@ -8,6 +8,9 @@ let PAPEL = null;              // 'dono' | 'atendente'
 let SERVICOS = [];             // [{id, nome, preco, ...}]
 let editandoId = null;         // id da lavagem sendo editada
 let editandoServicoId = null;  // id do serviço sendo editado (tela Opções)
+let DIAS_ACESSO = null;        // dias de crédito restantes (plano Free Trial)
+let PLANO = null;              // 'Free Trial' | 'Mensal'
+let NOME_LAVAJATO = "";        // nome do lava-jato (usado na saudação da Início)
 
 // ── HELPERS ───────────────────────────────────
 
@@ -100,6 +103,44 @@ function toast(texto) {
   toast._t = setTimeout(() => { el.classList.remove("show"); setTimeout(() => (el.hidden = true), 300); }, 3000);
 }
 
+// ── SONS (gerados no navegador, sem arquivos) ──
+let _audioCtx = null;
+function _ctxAudio() {
+  try {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_audioCtx.state === "suspended") _audioCtx.resume();
+    return _audioCtx;
+  } catch (e) { return null; }
+}
+function _nota(ctx, freq, atraso, dur, vol) {
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.value = freq;
+  osc.connect(g); g.connect(ctx.destination);
+  const t = ctx.currentTime + atraso;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+function tocarSom(evento) {
+  if (localStorage.getItem("som_desligado") === "1") return;  // permite mutar
+  const ctx = _ctxAudio();
+  if (!ctx) return;
+  if (evento === "registrar") {
+    // dois "blips" curtos subindo — som de "entrou na fila"
+    _nota(ctx, 660, 0, 0.12, 0.18);
+    _nota(ctx, 880, 0.10, 0.14, 0.18);
+  } else if (evento === "concluir") {
+    // acorde alegre de 3 notas — som de "finalizado"
+    _nota(ctx, 523.25, 0.00, 0.16, 0.18); // dó
+    _nota(ctx, 659.25, 0.12, 0.16, 0.18); // mi
+    _nota(ctx, 783.99, 0.24, 0.32, 0.20); // sol
+  }
+}
+
 // ── HELPERS DE DATA (dashboard) ───────────────
 
 function inicioDia(data = new Date()) {
@@ -184,6 +225,388 @@ async function renderDashboardCards() {
   return concluidas; // reaproveitado pelo gráfico
 }
 
+// ── TELA INÍCIO (HOME) ────────────────────────
+
+const DICAS = [
+  "Peça sempre o telefone do cliente: assim você avisa pelo WhatsApp quando o carro estiver pronto — e ele volta mais.",
+  "Cadastre seus serviços e preços em Opções. O valor preenche sozinho e você não erra no troco.",
+  "Anote a placa em toda lavagem. O sistema reconhece clientes recorrentes automaticamente no cadastro.",
+  "Ofereça um combo (lavagem + cera, ou + higienização) para aumentar o ticket médio sem gastar mais tempo.",
+  "Confira o Dashboard toda segunda para ver o serviço mais vendido e o horário de pico da semana.",
+  "Fim de semana costuma lotar. Ofereça horário marcado durante a semana para clientes fiéis.",
+  "Um cliente satisfeito indica outros. Vale a pena um cartãozinho de 'a cada 10 lavagens, 1 grátis'.",
+  "Registre a lavagem assim que o carro chega — a fila fica organizada e ninguém fura a ordem.",
+];
+
+// Dias restantes de crédito (Free Trial). null = sem informação.
+function diasDeCredito() {
+  if (DIAS_ACESSO == null || isNaN(DIAS_ACESSO)) return null;
+  return DIAS_ACESSO;
+}
+
+function renderCreditoBanner() {
+  const banner = document.getElementById("credito-banner");
+  if (!banner) return;   // index.html sem a tela Início → nada a fazer
+  const icon = document.getElementById("credito-icon");
+  const titulo = document.getElementById("credito-titulo");
+  const detalhe = document.getElementById("credito-detalhe");
+  const btnRenovar = document.getElementById("btn-renovar");
+  if (btnRenovar) btnRenovar.hidden = true;   // só aparece em alerta/crítico
+  banner.classList.remove("alerta", "critico");
+
+  const contato = (typeof CL_DIGITAL_CONTATO !== "undefined" && CL_DIGITAL_CONTATO)
+    ? " Fale com a CL Digital: " + CL_DIGITAL_CONTATO + "." : "";
+
+  const plano = (PLANO || "").toString().trim();
+  const ehMensal = plano.toLowerCase().includes("mensal");
+  const dias = (DIAS_ACESSO == null || isNaN(DIAS_ACESSO)) ? null : DIAS_ACESSO;
+  const nomePlano = plano || (dias !== null ? "Free Trial" : "");
+
+  // Sem nenhuma informação de plano/dias → não mostra a faixa
+  if (!plano && dias === null) { banner.hidden = true; return; }
+  banner.hidden = false;
+
+  // Plano mensal: assinatura em dia, sem contagem regressiva
+  if (ehMensal) {
+    icon.textContent = "✅";
+    titulo.textContent = "Plano Mensal";
+    detalhe.textContent = "Assinatura ativa.";
+    return;
+  }
+
+  // Plano por contador de dias (Free Trial etc.) sem número de dias definido
+  if (dias === null) {
+    icon.textContent = "✅";
+    titulo.textContent = "Plano: " + nomePlano;
+    detalhe.textContent = "Acesso ativo.";
+    return;
+  }
+
+  // Com contador de dias
+  if (dias <= 0) {
+    banner.classList.add("critico");
+    icon.textContent = "⛔";
+    titulo.textContent = `${nomePlano} — dias de crédito esgotados`;
+    detalhe.textContent = "Renove para continuar usando o sistema." + contato;
+    if (btnRenovar) btnRenovar.hidden = false;
+  } else if (dias <= 7) {
+    banner.classList.add("alerta");
+    icon.textContent = "⚠️";
+    titulo.textContent = `${nomePlano} — faltam ${dias} dia(s)`;
+    detalhe.textContent = "Renove para não interromper o serviço." + contato;
+    if (btnRenovar) btnRenovar.hidden = false;
+  } else {
+    icon.textContent = "✅";
+    titulo.textContent = `${nomePlano} — ${dias} dias restantes`;
+    detalhe.textContent = "Seu acesso está em dia.";
+  }
+}
+
+function escolherDica(filaQtd) {
+  const dias = diasDeCredito();
+  if (PLANO !== "Mensal" && dias !== null && dias <= 7) {
+    return "Seu crédito está acabando. Renove com a CL Digital para não interromper o atendimento.";
+  }
+  if (PAPEL === "dono" && SERVICOS.length === 0) {
+    return "Cadastre seus serviços e preços em Opções — o valor passa a preencher sozinho a cada lavagem e você evita erros de digitação.";
+  }
+  if (filaQtd >= 5) {
+    return `Você tem ${filaQtd} carros na fila agora. Avise os clientes pelo WhatsApp conforme forem ficando prontos para agilizar a saída.`;
+  }
+  // dica rotativa, estável ao longo do dia (troca a cada dia)
+  const diaAno = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return DICAS[diaAno % DICAS.length];
+}
+
+let ULTIMO_FAT_MES = 0;   // guardado p/ re-render da meta sem refetch
+
+async function renderHome() {
+  if (!document.getElementById("page-home")) return;  // index.html sem a Início → ignora
+  document.getElementById("home-saudacao").textContent =
+    NOME_LAVAJATO ? "Olá, " + NOME_LAVAJATO : "Início";
+
+  renderCreditoBanner();
+  renderClima();  // assíncrono, atualiza sozinho quando chegar
+
+  const concluidas = await buscarLavagens("concluida");
+  const hoje = inicioDia();
+  const ontem = somaDias(hoje, -1);
+  const amanha = somaDias(hoje, 1);
+
+  const mHoje = calcularMetricas(filtrarPorPeriodo(concluidas, hoje, amanha));
+  const mOntem = calcularMetricas(filtrarPorPeriodo(concluidas, ontem, hoje));
+
+  document.getElementById("home-hoje-qtd").textContent = mHoje.qtd;
+  document.getElementById("home-hoje-fat").textContent = formatarBRL(mHoje.fat);
+
+  // tendência de hoje comparado a ontem (só quantidade)
+  const trend = document.getElementById("home-hoje-trend");
+  const diff = mHoje.qtd - mOntem.qtd;
+  if (mHoje.qtd === 0 && mOntem.qtd === 0) {
+    trend.textContent = ""; trend.className = "trend";
+  } else if (diff > 0) {
+    trend.textContent = `▲ ${diff}`; trend.className = "trend up";
+  } else if (diff < 0) {
+    trend.textContent = `▼ ${Math.abs(diff)}`; trend.className = "trend down";
+  } else {
+    trend.textContent = "= igual a ontem"; trend.className = "trend flat";
+  }
+
+  // fechamento de ontem (destaque)
+  document.getElementById("home-ontem-fechamento").textContent = `${mOntem.qtd} carro(s)`;
+  document.getElementById("home-ontem-sub").textContent = `${formatarBRL(mOntem.fat)} faturados`;
+
+  // carros esperando agora + alerta de carro parado
+  const fila = await buscarLavagens("fila");
+  document.getElementById("home-fila").textContent = fila.length;
+  renderAlertaFila(fila);
+
+  // cliente mais fiel do mês
+  const doMes = filtrarPorPeriodo(concluidas, inicioMes(), amanha);
+  renderClienteFiel(doMes);
+
+  // comparativo da semana
+  const semanaAtual = inicioSemana();
+  const nSemana = filtrarPorPeriodo(concluidas, semanaAtual, somaDias(semanaAtual, 7)).length;
+  const nSemanaPassada = filtrarPorPeriodo(concluidas, somaDias(semanaAtual, -7), semanaAtual).length;
+  document.getElementById("home-semana-qtd").textContent = `${nSemana} lavagem(ns)`;
+  const ds = nSemana - nSemanaPassada;
+  document.getElementById("home-semana-sub").textContent =
+    ds > 0 ? `${ds} a mais que a semana passada`
+    : ds < 0 ? `${Math.abs(ds)} a menos que a semana passada`
+    : "igual à semana passada";
+
+  // meta do mês
+  ULTIMO_FAT_MES = calcularMetricas(doMes).fat;
+  renderMeta(ULTIMO_FAT_MES);
+
+  // dica do dia (contextual ou rotativa)
+  document.getElementById("home-dica-texto").textContent = escolherDica(fila.length);
+}
+
+// ── ALERTA: CARRO PARADO NA FILA ──────────────
+function formatarEspera(min) {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  return m ? `${h}h ${m}min` : `${h}h`;
+}
+function renderAlertaFila(fila) {
+  const el = document.getElementById("home-fila-alerta");
+  if (!el) return;
+  let maxMin = 0, carro = null;
+  fila.forEach((r) => {
+    if (!r.criado_em) return;
+    const min = Math.floor((Date.now() - new Date(r.criado_em)) / 60000);
+    if (min > maxMin) { maxMin = min; carro = r; }
+  });
+  if (carro && maxMin >= 60) {
+    const quem = carro.nome_cliente || "Um carro";
+    const placa = carro.placa ? ` (${carro.placa})` : "";
+    document.getElementById("fila-alerta-texto").textContent =
+      `${quem}${placa} está na fila há ${formatarEspera(maxMin)}. Dê uma atenção pra não deixar o cliente esperando.`;
+    el.hidden = false;
+  } else {
+    el.hidden = true;
+  }
+}
+
+// ── CLIENTE MAIS FIEL DO MÊS ──────────────────
+function renderClienteFiel(doMes) {
+  const cont = {};
+  doMes.forEach((r) => {
+    const placa = (r.placa && r.placa.trim()) ? r.placa.trim().toUpperCase() : "";
+    const chave = placa || (r.nome_cliente || "—");
+    if (!cont[chave]) cont[chave] = { n: 0, nome: r.nome_cliente || chave, placa };
+    cont[chave].n++;
+  });
+  const top = Object.values(cont).sort((a, b) => b.n - a.n)[0];
+  const valEl = document.getElementById("home-cliente-fiel");
+  const subEl = document.getElementById("home-cliente-fiel-sub");
+  if (top && top.n >= 2) {
+    valEl.textContent = top.nome;
+    subEl.textContent = (top.placa ? top.placa + " · " : "") + `${top.n} lavagens este mês`;
+  } else {
+    valEl.textContent = "—";
+    subEl.textContent = "Sem cliente recorrente ainda este mês.";
+  }
+}
+
+// ── META DO MÊS (salva no navegador) ──────────
+function chaveMeta() { return "meta_mes_" + LAVA_JATO_ID; }
+function renderMeta(fatMes) {
+  const barra = document.getElementById("meta-preenchida");
+  const texto = document.getElementById("meta-texto");
+  if (!barra || !texto) return;
+  const meta = Number(localStorage.getItem(chaveMeta()) || 0);
+  if (!meta || meta <= 0) {
+    barra.style.width = "0%";
+    barra.classList.remove("batida");
+    texto.textContent = "Defina uma meta de faturamento para acompanhar o progresso do mês.";
+    return;
+  }
+  const pct = Math.min(100, Math.round((fatMes / meta) * 100));
+  barra.style.width = pct + "%";
+  const batida = fatMes >= meta;
+  barra.classList.toggle("batida", batida);
+  texto.textContent = `${formatarBRL(fatMes)} de ${formatarBRL(meta)} — ${pct}%` + (batida ? " 🎉 meta batida!" : "");
+}
+ligarClique("btn-editar-meta", () => {
+  const ed = document.getElementById("meta-editor");
+  document.getElementById("meta-input").value = Number(localStorage.getItem(chaveMeta()) || 0) || "";
+  ed.hidden = !ed.hidden;
+});
+ligarClique("btn-cancelar-meta", () => { document.getElementById("meta-editor").hidden = true; });
+ligarClique("btn-salvar-meta", () => {
+  const v = Number(document.getElementById("meta-input").value);
+  if (!v || v <= 0) localStorage.removeItem(chaveMeta());
+  else localStorage.setItem(chaveMeta(), String(v));
+  document.getElementById("meta-editor").hidden = true;
+  renderMeta(ULTIMO_FAT_MES);
+});
+
+// ── PREVISÃO DO TEMPO (Open-Meteo, sem chave) ──
+function descreverTempo(code, isDay) {
+  const dia = isDay !== 0;   // undefined tratado como dia
+  if (code === 0) return { ico: dia ? "☀️" : "🌙", txt: "céu limpo", chuva: false };
+  if (code === 1 || code === 2) return { ico: dia ? "🌤️" : "☁️", txt: "parcialmente nublado", chuva: false };
+  if (code === 3) return { ico: "☁️", txt: "nublado", chuva: false };
+  if (code === 45 || code === 48) return { ico: "🌫️", txt: "névoa", chuva: false };
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return { ico: "🌧️", txt: "chuva", chuva: true };
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return { ico: "🌨️", txt: "neve", chuva: true };
+  if (code >= 95) return { ico: "⛈️", txt: "tempestade", chuva: true };
+  return { ico: "🌡️", txt: "tempo variável", chuva: false };
+}
+function _climaSet(cidade, ico, temp, cond, minmax, sens, vento, umid) {
+  document.getElementById("clima-cidade").textContent = cidade;
+  document.getElementById("clima-ico").textContent = ico;
+  document.getElementById("clima-temp").textContent = temp;
+  document.getElementById("clima-cond").textContent = cond;
+  document.getElementById("clima-minmax").textContent = minmax;
+  document.getElementById("clima-sensacao").textContent = sens;
+  document.getElementById("clima-vento").textContent = vento;
+  document.getElementById("clima-umidade").textContent = umid;
+}
+
+async function renderClima() {
+  const card = document.getElementById("home-clima");
+  if (!card) return;
+
+  // card já aparece na hora, em estado "carregando" — não espera aceitar/negar
+  card.hidden = false;
+  card.classList.remove("chuva");
+  _climaSet("Buscando previsão...", "🌡️", "--°", "", "", "--°", "--", "--");
+
+  const coords = await coordenadasDoUsuario();   // GPS (1ª vez) ou cidade cadastrada
+  if (!coords) {
+    _climaSet("Clima indisponível", "📍", "--°", "Autorize a localização ou cadastre a cidade.", "", "--°", "--", "--");
+    return;
+  }
+
+  try {
+    const prev = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}` +
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1`
+    ).then((r) => r.json());
+
+    const c = prev.current, d = prev.daily;
+    if (!c || !d) throw new Error("sem dados");
+
+    const info = descreverTempo(c.weather_code, c.is_day);
+    const tmax = Math.round(d.temperature_2m_max[0]);
+    const tmin = Math.round(d.temperature_2m_min[0]);
+    const prob = d.precipitation_probability_max ? d.precipitation_probability_max[0] : null;
+    const choveMuito = prob != null && prob >= 50;
+
+    _climaSet(
+      coords.nome,
+      info.ico,
+      `${Math.round(c.temperature_2m)}°`,
+      info.txt,
+      `Máx ${tmax}° · Mín ${tmin}°`,
+      `${Math.round(c.apparent_temperature)}°`,
+      `${Math.round(c.wind_speed_10m)} km/h`,
+      `${Math.round(c.relative_humidity_2m)}%`
+    );
+    card.classList.toggle("chuva", info.chuva || choveMuito);
+  } catch (e) {
+    console.log("[LavaSync] clima: erro ao buscar previsão", e);
+    _climaSet("Clima indisponível", "🌡️", "--°", "Tente novamente mais tarde.", "", "--°", "--", "--");
+  }
+}
+
+// Localização FIXA: usa sempre a cidade cadastrada do lava-jato (sem pedir GPS).
+// Se não houver cidade, tenta coordenadas guardadas de uma autorização anterior;
+// em último caso, retorna null e o card simplesmente não aparece.
+const GEO_LS = "geo_coords";
+function coordsCacheadas() {
+  try {
+    const o = JSON.parse(localStorage.getItem(GEO_LS) || "null");
+    if (!o || o.lat == null) return null;
+    if (Date.now() - (o.ts || 0) > 7 * 24 * 3600 * 1000) return null;  // expira em 7 dias
+    return o;
+  } catch (e) { return null; }
+}
+function salvarCoords(o) {
+  if (!o || o.lat == null) return;
+  try { localStorage.setItem(GEO_LS, JSON.stringify({ lat: o.lat, lon: o.lon, nome: o.nome, ts: Date.now() })); } catch (e) {}
+}
+// Tenta GPS (pede permissão só na 1ª vez; depois reaproveita o cache por 7 dias).
+// Se negar/indisponível, usa a cidade cadastrada.
+function coordenadasDoUsuario() {
+  return new Promise((resolve) => {
+    const cache = coordsCacheadas();
+    if (cache) { resolve(cache); return; }
+    if (!navigator.geolocation) { coordsPelaCidade().then(resolve); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const o = { lat: pos.coords.latitude, lon: pos.coords.longitude, nome: "Sua região" };
+        salvarCoords(o);
+        resolve(o);
+      },
+      () => { coordsPelaCidade().then(resolve); },
+      { timeout: 10000, maximumAge: 30 * 60 * 1000 }
+    );
+  });
+}
+
+async function coordsPelaCidade() {
+  try {
+    const { data } = await sb.from("lava_jatos").select("cidade").eq("id", LAVA_JATO_ID).maybeSingle();
+    const cidade = data && data.cidade ? String(data.cidade).trim() : null;
+    if (!cidade) return null;
+    const geo = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt`
+    ).then((r) => r.json());
+    if (!geo.results || !geo.results.length) return null;
+    const g = geo.results[0];
+    return { lat: g.latitude, lon: g.longitude, nome: g.name };
+  } catch (e) {
+    return null;
+  }
+}
+
+// ── RENOVAR PLANO (WhatsApp da CL Digital) ────
+function abrirRenovacao() {
+  const bruto = (typeof CL_DIGITAL_CONTATO !== "undefined" && CL_DIGITAL_CONTATO) ? CL_DIGITAL_CONTATO : "";
+  let tel = bruto.replace(/\D/g, "");
+  if (!tel) { toast("Contato da CL Digital não configurado."); return; }
+  if (tel.length <= 11) tel = "55" + tel;   // adiciona o DDI do Brasil se faltar
+  const msg = encodeURIComponent(`Olá, quero renovar o plano do ${NOME_LAVAJATO || "meu lava-jato"}.`);
+  window.open(`https://wa.me/${tel}?text=${msg}`, "_blank");
+}
+ligarClique("btn-renovar", abrirRenovacao);
+
+// atalhos rápidos da Início (à prova de elemento ausente)
+function ligarClique(id, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("click", fn);
+}
+ligarClique("atalho-registrar", () => irParaPagina("registrar"));
+ligarClique("atalho-fila", () => irParaPagina("fila"));
+ligarClique("atalho-dashboard", () => irParaPagina("dashboard"));
+
+
 // ── GRÁFICO: FATURAMENTO COMPARATIVO ──────────
 
 let chartFaturamento = null;
@@ -262,7 +685,8 @@ async function entrarNoApp(pularChecagemSenha) {
   if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;*/
 
   // AS LINHAS ABAIXO SALVAM A VARIAÇÃO DE COR ESCOLHIDA PELO CLIENTE
-    const { data: lj } = await sb.from("lava_jatos").select("nome, cor_principal, ativo").eq("id", LAVA_JATO_ID).maybeSingle();
+    const { data: lj, error: ljErr } = await sb.from("lava_jatos").select("nome, cor_principal, ativo, dias_acesso, plano").eq("id", LAVA_JATO_ID).maybeSingle();
+    if (ljErr) console.warn("[LavaSync] erro ao ler lava_jato:", ljErr.message);
 
     if (lj && lj.ativo === false) {
       const erro = document.getElementById("auth-erro");
@@ -272,7 +696,13 @@ async function entrarNoApp(pularChecagemSenha) {
       return;
     }
 
-    if (lj && lj.nome) document.getElementById("nome-lavajato").textContent = lj.nome;
+    if (lj && lj.nome) {
+      NOME_LAVAJATO = lj.nome;
+      document.getElementById("nome-lavajato").textContent = lj.nome;
+    }
+    DIAS_ACESSO = (lj && lj.dias_acesso != null) ? Number(lj.dias_acesso) : null;
+    PLANO = (lj && lj.plano) || null;
+    console.log("[LavaSync] plano:", PLANO, "| dias_acesso:", DIAS_ACESSO);
     const corSalva = (lj && lj.cor_principal) || "#0071e3";
     aplicarCor(corSalva);
     document.getElementById("cor-principal").value = corSalva;
@@ -288,6 +718,7 @@ async function entrarNoApp(pularChecagemSenha) {
   authScreen.hidden = true;
   await carregarServicos();
   await atualizarBadge();
+  await renderHome();
   verificarOnboarding();
 }
 
@@ -377,6 +808,7 @@ navItems.forEach((btn) => {
     pages.forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById("page-" + alvo).classList.add("active");
+    if (alvo === "home") await renderHome();
     if (alvo === "fila") await renderFila();
     if (alvo === "lavagens") await renderHistorico();
     if (alvo === "opcoes") await carregarServicos();
@@ -743,7 +1175,19 @@ placaInput.addEventListener("blur", async () => {
 
   data.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
   const ultimo = data[0];
-  placaHint.innerHTML = `🔁 <b>Cliente recorrente</b> — já veio ${data.length} vez(es). Última: ${ultimo.nome_cliente}.`;
+
+  // data da última visita: usa data_entrada; se faltar, cai pro criado_em
+  let dataUltima = "—";
+  const bruta = ultimo.data_entrada || ultimo.criado_em;
+  if (bruta) {
+    // data_entrada vem como "YYYY-MM-DD" (sem fuso); trata pra não virar o dia anterior
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(bruta)
+      ? new Date(bruta + "T00:00:00")
+      : new Date(bruta);
+    if (!isNaN(d)) dataUltima = d.toLocaleDateString("pt-BR");
+  }
+
+  placaHint.innerHTML = `🔁 <b>Cliente recorrente</b> — já veio ${data.length} vez(es). Última: ${dataUltima}.`;
   placaHint.hidden = false;
 
   // preenche nome e telefone se estiverem vazios
@@ -774,6 +1218,7 @@ document.getElementById("form-entrada").addEventListener("submit", async (event)
   const { error } = await sb.from("lavagens").insert(registro);
   if (error) { console.error(error); toast("❌ Erro ao registrar. Tente de novo."); return; }
   toast("✔ " + registro.nome_cliente + " adicionado à fila!");
+  tocarSom("registrar");
   event.target.reset();
   placaHint.hidden = true;
   document.getElementById("data_entrada").valueAsDate = new Date();
@@ -835,6 +1280,7 @@ async function concluirLavagem(id) {
   const { error } = await sb.from("lavagens").update({ status: "concluida", concluido_em: new Date().toISOString() }).eq("id", id);
   if (error) { console.error(error); toast("❌ Erro ao concluir."); return; }
   toast("💧 Lavagem concluída — enviada para o histórico");
+  tocarSom("concluir");
   await renderFila(); await atualizarBadge();
 }
 

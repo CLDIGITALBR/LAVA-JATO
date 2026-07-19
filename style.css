@@ -29,6 +29,12 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Garante que o atributo hidden sempre esconda, mesmo em flex/grid */
+[hidden] { display: none !important; }
+
+/* Garante que o atributo hidden sempre esconda, mesmo em blocos com display:flex */
+[hidden] { display: none !important; }
+
 body {
   font-family: var(--font-text);
   background: var(--page);
@@ -706,3 +712,223 @@ input[readonly] { background: var(--page); color: var(--muted); cursor: not-allo
   .top3-qtd { font-weight: 600; color: var(--muted); }
 
   
+/* ── TELA INÍCIO (HOME) ─────────────────────── */
+
+/* Faixa de crédito / vencimento */
+.credito-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  background: var(--brand-tint);
+}
+.credito-banner .credito-icon { font-size: 22px; line-height: 1; }
+.credito-texto { display: flex; flex-direction: column; gap: 2px; }
+.credito-texto strong { font-size: 16px; color: var(--text); font-weight: 600; }
+.credito-texto span { font-size: 14px; color: var(--muted); }
+
+/* Estado de alerta (<= 7 dias) */
+.credito-banner.alerta {
+  background: #fff7ed;
+  border-color: #f5c583;
+  animation: creditoPulse 2s ease-in-out infinite;
+}
+.credito-banner.alerta strong { color: var(--gold); }
+.credito-banner.alerta .credito-texto span { color: #9a6a1a; }
+
+/* Estado crítico (vencido) */
+.credito-banner.critico {
+  background: #fff1f0;
+  border-color: #f5a9a4;
+}
+.credito-banner.critico strong { color: var(--red); }
+.credito-banner.critico .credito-texto span { color: #b23b34; }
+
+@keyframes creditoPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(178,106,0,0.18); }
+  50%      { box-shadow: 0 0 0 6px rgba(178,106,0,0); }
+}
+
+/* Setinha de comparação hoje x ontem */
+.trend { font-weight: 600; font-size: 13px; }
+.trend.up   { color: var(--green); }
+.trend.down { color: var(--red); }
+.trend.flat { color: var(--muted); }
+
+/* Atalhos rápidos */
+.home-atalhos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.atalho-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.atalho-btn:hover { border-color: var(--brand); background: var(--brand-tint); }
+.atalho-ico { font-size: 18px; line-height: 1; }
+
+/* Card de dica */
+.dica-card { display: flex; flex-direction: column; gap: 12px; padding: 26px 30px; }
+.dica-badge {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+  background: var(--brand-soft);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.dica-texto { font-size: 16px; color: var(--text); line-height: 1.5; }
+
+/* ── INÍCIO: NOVOS BLOCOS ───────────────────── */
+
+/* Botão renovar plano (dentro da faixa de crédito) */
+.credito-banner .btn-renovar {
+  margin-left: auto;
+  white-space: nowrap;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s;
+}
+.credito-banner .btn-renovar:hover { filter: brightness(1.05); }
+.credito-banner.alerta .btn-renovar,
+.credito-banner.critico .btn-renovar { background: var(--gold); }
+.credito-banner.critico .btn-renovar { background: var(--red); }
+
+/* Card de clima (layout rico) */
+.clima-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+}
+.clima-topo { display: flex; flex-direction: column; gap: 2px; }
+.clima-cidade { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.clima-agora { font-size: 14px; color: var(--muted); }
+.clima-atual { display: flex; align-items: center; gap: 14px; }
+.clima-ico { font-size: 40px; line-height: 1; }
+.clima-temp { font-family: var(--font-display); font-size: 44px; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -0.02em; }
+.clima-cond-box { display: flex; flex-direction: column; gap: 3px; }
+.clima-cond { font-size: 15px; color: var(--brand); font-weight: 600; }
+.clima-minmax { font-size: 13px; color: var(--muted); }
+.clima-stats { display: flex; gap: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
+.clima-stat { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.cs-label { font-size: 13px; color: var(--muted); }
+.cs-valor { font-size: 16px; font-weight: 700; color: var(--text); }
+.clima-card.chuva { background: #eef4ff; border-color: #b9d0f5; }
+
+/* Alerta de carro parado na fila */
+.fila-alerta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  margin-bottom: 28px;
+  background: #fff7ed;
+  border: 1px solid #f5c583;
+  color: #9a6a1a;
+  font-size: 15px;
+  font-weight: 500;
+}
+.fila-alerta-ico { font-size: 20px; }
+
+/* Meta do mês */
+.meta-card { margin-bottom: 28px; padding: 26px 30px; }
+.meta-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.meta-head .card-titulo { margin: 0; }
+.meta-barra {
+  width: 100%;
+  height: 14px;
+  background: var(--page);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.meta-preenchida {
+  height: 100%;
+  width: 0%;
+  background: var(--brand);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.meta-preenchida.batida { background: var(--green); }
+.meta-texto { font-size: 15px; color: var(--muted); margin-top: 12px; }
+.meta-editor { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.meta-editor input { max-width: 200px; }
+
+/* Cards de destaque (fechamento ontem / cliente fiel / semana) */
+.destaques-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.destaque-card { display: flex; flex-direction: column; gap: 6px; padding: 22px 24px; }
+.destaque-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.destaque-valor { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.2; }
+.destaque-sub { font-size: 14px; color: var(--muted); }
+
+/* Botão pequeno reutilizado na Início */
+.meta-head .btn-x, .meta-editor .btn-x {
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.meta-head .btn-x:hover, .meta-editor .btn-x:hover { border-color: var(--brand); color: var(--brand); }
+
+/* ── INÍCIO: PLANO + CLIMA LADO A LADO ──────── */
+.home-topo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+  align-items: stretch;
+}
+.home-topo .credito-banner {
+  margin-bottom: 0;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  min-height: 130px;
+}
+.home-topo .clima-card { margin-bottom: 0; height: 100%; }
+.home-topo .btn-renovar { margin-left: 0; width: 100%; }
+.home-topo .credito-icon { font-size: 30px; }
+
+/* Em telas estreitas, empilha (o clima fica legível) */
+@media (max-width: 680px) {
+  .home-topo { grid-template-columns: 1fr; }
+}
